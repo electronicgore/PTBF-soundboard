@@ -1,0 +1,86 @@
+# PythonTwitchBotFramework with Soundboard
+
+**NOTE: this readme is for the soundboard only! The upstream readme for the whole bot is [here](https://github.com/electronicgore/PythonTwitchBotFramework/blob/master/README_upstream.md)**
+
+This is a fork of [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. This readme describes the functions specific to this fork; see the original readme and the [wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) in the upstream repo for info on how to install, set up, and use the bot.
+
+The soundboard currently integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
+
+
+# Dependencies
+The soundboard uses [PyDub](https://github.com/jiaaro/pydub/) to play sounds, so you need that. Regarding formats: WAV works with no further dependencies; for other formats you'll need [ffmpeg](http://www.ffmpeg.org/) or [libav](http://libav.org/).
+
+
+# Quickstart
+Create a `sounds` folder in the folder from which you are running the bot. Put some audio files in there, e.g. `wow.mp3`. Type `!updatesb` in chat. Now you and your viewers can play this sound using the command `!sb wow`.
+
+
+# Config options
+The following options are relevant for the soundboard and are set in `./config/config.json`:
+
+* `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
+* `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency (which is like twitch points, but internal to the bot). Set to `0` if you do not want to use this.
+* `soundbank_verbose` (default: `True`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
+* `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
+* `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 
+
+
+# Adding sounds
+There are two ways to add sounds to the soundboard: automatic and manual.
+
+## Adding sounds: automatic
+The `!updatesb` command runs the automatic scraper. It scans the *soundbank folder* (which is set by the `soundbank_path` config variable) and adds any audio file from that folder to the soundbank, using filename as the sound name in the bank. 
+
+E.g., with default config, file `<botfolder>/sounds/wow.mp3` will be named `wow` and can be then played with `!sb wow`. 
+
+File extension (everything after the last dot) is automatically stripped. If filename has spaces, then only the first word is taken as sound name (so file `<botfolder>/sounds/wow what.mp3` will be named `wow`).
+
+The command takes the following options:
+
+* `r` -- *recursive*, to look for audio files in nested folders as well, and not only in `soundbank_path`;
+* `s` -- *strip prefix*, to strip everything until the first underscore when converting filename to sound name. E.g., sound `sounds/owen_wow.mp3` would be named `wow` by `!updatesb s`.
+* `f` -- *force*, to force-replace any existing sounds in the bank with new ones in case of conflicting sound names (otherwise conflicts are skipped).
+* `q` -- *quiet*, to suppress detailed reporting in the bot output (not in chat).
+
+The options can be combined: e.g., `!updatesb rs` scans `soundbank_path` and all nested folders and strips prefixes.
+
+To summarize, there are three ways to organize your sound collection: using whitespaces in filenames, using prefixes with underscores in filenames (with `s` option), and using subfolders (with `r` option).
+
+
+## Adding sounds: manual
+You can also add sounds to the soundbank manually using `!addsound` command. The syntax is:
+
+`!addsound <sndid> <filepath> [price=(price)] [pricemult=(pricemult)] [gain=(gain)]`
+
+Example:
+`!addsound wow "owen/wow.mp3" pricemult=x1.5 gain=6`
+
+Arguments:
+
+* `sndid` is the sound name (mandatory)
+* `filepath` is the path to audio file (mandatory). The path is relative to the `soundbank_path`, so in the example above, the file is actually in `<botfolder>/sounds/owen/wow.mp3`. To be safe it is best to enclose the filepath in single or double quotes.
+* `price` and `pricemult` are optional arguments modifying the price of playing this sound. At most one of the two may be specified. If neither is specified, price defaults to `soundbank_default_price` as specified in the config. If `pricemult` is specified, the sound will cost `soundbank_default_price * pricemult`.
+* `gain` (optional) specifies how loudly this sound file should be played. Added to `soundbank_gain`.
+
+
+# Playing and listing sounds
+To play a sound with name `sndid`, use command `!sb sndid`. It is not currently possible to add sounds as first-level commands (e.g., `!sndid`) without manually creating a custom command, see [upstream readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md#adding-commands).
+
+If you would like to list all sounds currently present in the soundbank, use `!gensblist`. Note that this will not output the list in chat (to avoid problems with large soundbanks), but rather create a text file in your sounds folder. The list will contain all sounds and their current prices. The list is unsorted afaik.
+
+
+# Modifying and deleting sounds
+
+## Updating sound entries
+You can update the sound data using `!updatesnd`. Syntax: 
+`!updsound <sndid> [name=(new_sndid)] [price=(price)] [pricemult=(pricemult)] [gain=(gain)]`
+Changing the filename is not possible, because it is too painful to parse them with regexp. But it is possible to change the sound name. All other options are the same as in [Adding sounds: manual](#adding-sounds-manual)
+
+## Deleting a sound
+To delete a sound named `sndid`, use `!delsound sndid`.
+
+## Deleting sounds with missing files
+`!cleansb` will remove all sounds from the bank, for which the bot is not able to locate the referenced audio file.
+
+## Deleting all sounds from the bank
+`!purgesb` deletes all sounds from the soundbank.

@@ -1,8 +1,6 @@
-# PythonTwitchBotFramework with Soundboard
+# PythonTwitchBotFramework Soundboard mod
 
-**NOTE: this readme is for the soundboard only! The upstream readme for the whole bot is [here](https://github.com/electronicgore/PythonTwitchBotFramework/blob/master/README_upstream.md)**
-
-This is a fork of [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. This readme describes the functions specific to this fork; see the original readme and the [wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) in the upstream repo for info on how to install, set up, and use the bot.
+This is an extension for [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. See the original readme and the [wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) for info on how to install, set up, and use the bot.
 
 The soundboard currently integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
 
@@ -11,15 +9,19 @@ The soundboard currently integrates with the bot's own economy, but does not rea
 The soundboard uses [PyDub](https://github.com/jiaaro/pydub/) to play sounds, so you need that. Regarding formats: WAV works with no further dependencies; for other formats you'll need [ffmpeg](http://www.ffmpeg.org/) or [libav](http://libav.org/).
 
 
+# Installation
+Put the `soundboardt.py` into `[bot-folder]/commands/`. Launch the bot as usual.
+
+
 # Quickstart
-Create a `sounds` folder in the folder from which you are running the bot. Put some audio files in there, e.g. `wow.mp3`. Type `!updatesb` in chat. Now you and your viewers can play this sound using the command `!sb wow`.
+Create a `sounds` folder in your bot folder. Put some audio files in there, e.g. `wow.mp3`. Type `!updatesb` in chat. Now you and your viewers can play this sound using the command `!sb wow`.
 
 
 # Config options
 The following options are relevant for the soundboard and are set in `./config/config.json`:
 
 * `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
-* `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency (which is like twitch points, but internal to the bot). Set to `0` if you do not want to use this.
+* `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use this. Note: this is applied when *adding* sounds, it does not retroactively change the price of previously added sounds.
 * `soundbank_verbose` (default: `True`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
 * `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 

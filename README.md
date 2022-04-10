@@ -10,7 +10,7 @@ The soundboard uses [PyDub](https://github.com/jiaaro/pydub/) to play sounds, so
 
 
 # Installation
-Put the `soundboardt.py` into `[bot-folder]/commands/`. Launch the bot as usual.
+Put the `soundboardt.py` into `<botfolder>/commands/`. Launch the bot as usual.
 
 
 # Quickstart

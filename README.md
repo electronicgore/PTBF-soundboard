@@ -25,8 +25,8 @@ The following options are relevant for the soundboard and are set in `./config/c
 * `soundbank_verbose` (default: `True`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
 * `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 
-* `soundbank_use_collections` (default: false): are you using any soundboard collections? See [collections](#collections)
-* `soundbank_collections` (default: None): defines the soundboard collections for you to use; see [collections](#collections)
+* `soundbank_use_collections` (default: `False`): are you using any soundboard collections? See [collections](#collections)
+* `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections)
 
 
 # Adding sounds

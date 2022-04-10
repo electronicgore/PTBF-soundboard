@@ -6,7 +6,10 @@ The soundboard currently integrates with the bot's own economy, but does not rea
 
 
 # Dependencies
-The soundboard uses [PyDub](https://github.com/jiaaro/pydub/) to play sounds, so you need that. Regarding formats: WAV works with no further dependencies; for other formats you'll need [ffmpeg](http://www.ffmpeg.org/) or [libav](http://libav.org/).
+
+1. [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework), obviously
+2. [PyDub](https://github.com/jiaaro/pydub/) to play sounds. 
+3. WAV works with no further dependencies; for other formats you'll need [ffmpeg](http://www.ffmpeg.org/) or [libav](http://libav.org/) installed in the system.
 
 
 # Installation
@@ -92,7 +95,7 @@ To delete a sound named `sndid`, use `!delsound sndid`.
 
 
 # Collections
-Instead of playing a certain sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `owen_wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
+Instead of playing a certain sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
 
 To implement the idea described above (assuming you already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy`), you should add the following to the config (`<botfolder>/configs/config.json`):
 ```json
@@ -117,6 +120,6 @@ You can, of course, define multiple collections in the config file, separated by
 
 
 ## Collections: NOTES
-* Unlike the rest of the soundboard, collections are *not integrated into the bot economy*. I.e., playing a sound from a collection does **not** require channel currency. This is 90% lazy, 10% intentional. (Imagine a collection where one sound costs 10 moneys, another 30 moneys, and the viewer only has 20 moneys. Should the bot ignore an unfortunate roll altogether? Or should it restrict the roll to only affordable sounds? Or should there be a uniform price for the whole collection, possibly detached from the individual sound prices? The bot basically adopts the latter approach as of now, with a price set to zero, but a case can be made for either.) Create an issue on github if you ever need to integrate collections into the economy, and I'll probably be able to implement that.
+* Unlike the rest of the soundboard, collections are currently *not integrated into the bot economy*. I.e., playing a sound from a collection does **not** require channel currency. This is 90% lazy, 10% intentional. (Imagine a collection where one sound costs 10 moneys, another 30 moneys, and the viewer only has 20 moneys. Should the bot ignore an unfortunate roll altogether? Or should it restrict the roll to only affordable sounds? Or should there be a uniform price for the whole collection, possibly detached from the individual sound prices? The bot basically adopts the latter approach as of now, with a price set to zero, but a case can be made for either.) Create an issue on github if you ever need to integrate collections into the economy, and I'll probably be able to implement that.
 
-* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This is not a very meaningful distinction, and exists mostly because I have historically implemented things this way. Replacing `!collection` with `!sb collection` should be easy; let me know via github issues if you ever need it. Replacing `!sb sound` with `!sound` *may* be feasible, but no guarantees there.
+* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This is not a very meaningful distinction, and exists mostly for historical reasons. Replacing `!collection` with `!sb collection` should be easy; let me know via github issues if you ever need it. Replacing `!sb sound` with `!sound` *may* be feasible, but no guarantees there.

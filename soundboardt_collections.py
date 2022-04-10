@@ -17,13 +17,16 @@ from soundboardt import Sound, get_sound
 if 'soundbank_use_collections' not in cfg.data: 
     if 'soundbank_collections' not in cfg.data: 
         cfg.data['soundbank_use_collections'] = False
+        cfg.data['soundbank_collections'] = { }; 
     else:
         cfg.data['soundbank_use_collections'] = True
         print('Warning: config defines some soundboard collections but "soundbank_use_collections" is undefined! Attempting to use the collections anyway')
 
 if 'soundbank_collections' not in cfg.data: 
-    cfg.data['soundbank_use_collections'] = False; 
-    print('Warning: config says to use soundboard collections, but none are defined! Cancelling!')
+    cfg.data['soundbank_collections'] = { }; 
+    if 'soundbank_use_collections' == True: 
+        cfg.data['soundbank_use_collections'] = False; 
+        print('Warning: config says to use soundboard collections, but none are defined! Cancelling!')
 
 
 

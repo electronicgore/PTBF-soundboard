@@ -16,7 +16,7 @@ The soundboard is designed for a *single-channel bot*. If you run one instance o
 
 
 # Installation
-Put the `soundboardt.py` into `<botfolder>/commands/`. Launch the bot as usual.
+Get python, get PythonTwitchBotFramework, download the pyfiles from this repo and put them in `<botfolder>/commands/`. Launch the bot as usual.
 
 
 # Quickstart

@@ -39,7 +39,8 @@ The following options are relevant for the soundboard and are set in `./config/c
 
 ## Soundbank hotkeys
 * `soundbank_use_hotkeys` (default: `false`): should the bot react to hotkeys defined in the following config items?
-* `soundbank_hotkeys` (default: `None`) and `soundbank_hotkeys_collections` (default: `None`) defines hotkeys; see [hotkeys](#hotkeys) for more details.
+* `soundbank_hotkeys_channel` (default: `None`): which channel's soundboard should the sounds be played from. Defaults to the first channel defined in the `channels` section of the config file.
+* `soundbank_hotkeys` (default: `None`) and `soundbank_hotkeys_collections` (default: `None`) defines hotkeys and respective sounds/collections; see [hotkeys](#hotkeys) for more details.
 
 ## Soundbank config example
 The following is an example of the part of the `<botfolder>/configs/config.json` file that defines some collections and some hotkeys. This is meant to go after any other config options and before the final closing `}` (so to clarify, this is not a complete `config.json` file!).

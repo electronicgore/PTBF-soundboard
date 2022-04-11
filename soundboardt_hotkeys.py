@@ -13,9 +13,10 @@ elif cfg.soundbank_use_hotkeys == True:
     
 
 
-# Hotkeys use the soundbank for the first channel defined in the config.
-# This is because we can no longer infer the channel from the message.
-CHANNEL = cfg.channels[0]
+if 'soundbank_hotkeys_channel' not in cfg.data: 
+    CHANNEL = cfg.channels[0]
+else:
+    CHANNEL = cfg.soundbank_hotkeys_channel
 
 
 """ the following might still come in handy once collections are integrated in the economy, for the same reason as the next function

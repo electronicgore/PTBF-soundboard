@@ -52,20 +52,22 @@ The following is an example of the part of the `<botfolder>/configs/config.json`
   "soundbank_cooldown": 15,
   "soundbank_use_collections": true,
   "soundbank_collections": {
-    "hi": [
-      "hello",
-      "hellothere",
-      "hi"
-    ],
-    "bb": [
-      "boop",
-      "honk",
-      "wenk"
-    ],
-    "f": [
-      "unacceptable",
-      "wilhelm"
-    ]
+    "<yourtwitchchannel>": {
+      "hi": [
+        "hello",
+        "hellothere",
+        "hi"
+      ],
+      "bb": [
+        "boop",
+        "honk",
+        "wenk"
+      ],
+      "f": [
+        "unacceptable",
+        "wilhelm"
+     ]
+    }
   },
   "soundbank_use_hotkeys": true,
   "soundbank_hotkeys": {

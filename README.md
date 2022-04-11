@@ -4,7 +4,7 @@ This is an extension for [PythonTwitchBotFramework](https://github.com/sharkboun
 
 As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
 
-The soundboard is designed for a *single-channel bot*. If you run one instance of the bot that is supposed to join multiple twitch channels and maintain separate soundboards for each channel, things **will** break down. Don't do this.
+For any questions or feature requests, open an issue on github.
 
 
 # Dependencies
@@ -149,11 +149,13 @@ To delete a sound named `sndid`, use `!delsound sndid`.
 # Collections
 Instead of playing a *certain* sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
 
-To implement the idea described above (assuming you already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy`), you should add the following to the config (`<botfolder>/configs/config.json`):
+To implement the idea described above (assuming you already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`):
 ```json
 "soundbank_use_collections": true,
 "soundbank_collections": {
+  "channel": {
     "whoa": ["wow", "ohmy"]
+  }
 }
 ```
 
@@ -163,18 +165,35 @@ You can, of course, define multiple collections in the config file, separated by
 ```json
 "soundbank_use_collections": true,
 "soundbank_collections": {
+  "channel": {
     "whoa": ["wow", "ohmy"],
     "f": ["payrespects", "wilhelmscream", "overconfidence"]
+  }
 }
 ```
 
-(Reminder: ensure that all the sounds that you include as parts of collections are actually added to the database.)
+And, in principle, you can have different collections for different twitch channels (could be useful if you stream to different channels from the same PC):
+```json
+"soundbank_use_collections": true,
+"soundbank_collections": {
+  "channel": {
+    "whoa": ["wow", "ohmy"]
+  },
+  "anotherchannel":{
+    "whoa": ["wilhelmscream", "overconfidence"]
+  }
+}
+```
+
+(Reminder: ensure that all the sounds that you include as parts of collections are actually added to the database (in respective channels!).)
 
 
 ## Collections: NOTES
 * Unlike the rest of the soundboard, collections are currently *not integrated into the bot economy*. I.e., playing a sound from a collection does **not** require channel currency. This is 90% lazy, 10% intentional. (Imagine a collection where one sound costs 10 moneys, another 30 moneys, and the viewer only has 20 moneys. Should the bot ignore an unfortunate roll altogether? Or should it restrict the roll to only affordable sounds? Or should there be a uniform price for the whole collection, possibly detached from the individual sound prices? The bot basically adopts the latter approach as of now, with a price set to zero, but a case can be made for either.) Create an issue on github if you ever need to integrate collections into the economy, and I'll probably be able to implement that.
 
-* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This distinction is 100% lazy and exists mostly for historical reasons. Replacing `!collection` with `!sb collection` should be easy; let me know via github issues if you ever need it. Replacing `!sb sound` with `!sound` *may* be feasible, but no guarantees there.
+* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This distinction is 100% lazy and exists mostly for historical reasons.
+
+* Same as you can have different sounds in different channels, you can have different collections in different channels. Collections from different channels can have the same name. 
 
 
 # Hotkeys
@@ -192,6 +211,8 @@ You can use hotkeys to play sounds, directly or via collections. To do that, ens
 ```
 
 Then after launching the bot, pressing the hotkeys defined in the configfile (on the same computer/os/user that the bot is launched from) should play the respective sound or a random sound from the respective collection.
+
+Both sounds and collections are taken from the first channel defined in the `channels` section of the config file. 
 
 * `soundbank_hotkeys` (default: `None`): a dictionary of the form `<key>: "<sndid>"`, where `<sndid>` corresponds to a sound identifier (see [Adding sounds](#adding-sounds) below), and `<key>` corresponds to the shortcut you want to use.
 * `soundbank_hotkeys_collections` (default: `None`): a dictionary of the form `<key>: "<collection>"`, where `<collection>` corresponds to a collection identifier (see [Collections](#collections) below), and `<key>` corresponds to the shortcut you want to use.

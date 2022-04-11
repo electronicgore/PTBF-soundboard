@@ -70,7 +70,7 @@ The following is an example of the part of the `<botfolder>/configs/config.json`
       "wilhelm"
     ]
   },
-  "soundbank_use_hotkeys": True
+  "soundbank_use_hotkeys": true,
   "soundbank_hotkeys": {
     "<ctrl>+<shift>+s": "honk"
   },

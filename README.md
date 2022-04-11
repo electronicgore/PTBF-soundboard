@@ -27,26 +27,22 @@ Create a `sounds` folder in your bot folder. Put some audio files in there, e.g.
 The following options are relevant for the soundboard and are set in `./config/config.json`:
 
 ## General soundbank config
-
 * `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
 * `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use this. Note: this is applied when *adding* sounds, it does not retroactively change the price of previously added sounds.
-* `soundbank_verbose` (default: `True`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
+* `soundbank_verbose` (default: `true`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
 * `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 
 
 ## Soundbank collections
-
-* `soundbank_use_collections` (default: `False`): are you using any soundboard collections? See [collections](#collections)
-* `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections)
+* `soundbank_use_collections` (default: `false`): are you using any soundboard collections? See [collections](#collections)
+* `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections) for more details.
 
 ## Soundbank hotkeys
-
-* `soundbank_use_hotkeys` (default: `False`): should the bot react to hotkeys defined in the following config items?
-* `soundbank_hotkeys` (default: `None`): a dictionary of the form `<key>: "<sndid>"`, where `<sndid>` corresponds to a sound identifier (see [Adding sounds](#adding-sounds) below), and `<key>` corresponds to the shortcut you want to use, of the form `"<ctrl>+<shift>+<cmd>+<alt>+q"`. [Pynput docs](https://pynput.readthedocs.io/en/latest/keyboard.html) may be helpful in figuring out how to construct the `<key>` string.
-* `soundbank_hotkeys_collections` (default: `None`): a dictionary of the form `<key>: "<collection>"`, where `<collection>` corresponds to a collection identifier (see [Collections](#collections) below), and `<key>` corresponds to the shortcut you want to use, of the form `"<ctrl>+<shift>+<cmd>+<alt>+q"`. [Pynput docs](https://pynput.readthedocs.io/en/latest/keyboard.html) may be helpful in figuring out how to construct the `<key>` string.
+* `soundbank_use_hotkeys` (default: `false`): should the bot react to hotkeys defined in the following config items?
+* `soundbank_hotkeys` (default: `None`) and `soundbank_hotkeys_collections` (default: `None`) defines hotkeys; see [hotkeys](#hotkeys) for more details.
 
 ## Soundbank config example
-The following is an example of the part of the `<botfolder>/configs/config.json` file that defines some collections and some hotkeys. This is meant to go after any other config options and before the final closing `}`.
+The following is an example of the part of the `<botfolder>/configs/config.json` file that defines some collections and some hotkeys. This is meant to go after any other config options and before the final closing `}` (so to clarify, this is not a complete `config.json` file!).
 ```
   "soundbank_path": "./sounds",
   "soundbank_default_price": 20,
@@ -90,25 +86,28 @@ The `!updatesb` command runs the automatic scraper. It scans the *soundbank fold
 
 E.g., with default config, file `<botfolder>/sounds/wow.mp3` will be named `wow` and can be then played with `!sb wow`. 
 
-File extension (everything after the last dot) is automatically stripped. If filename has spaces, then only the first word is taken as sound name (so file `<botfolder>/sounds/wow what.mp3` will be named `wow`).
-Note that this can create conflicts: if you have sounds named `wow.mp3` and `wow 2.mp3`, both of them will try to use name `wow`, which is not allowed. Exercise care to avoid such conflicts. If you want one command to pull a random sound from a pool of sounds, see [collections](#collections).
+Important notes on scraping:
+* File extension (everything after the last dot) is automatically stripped (`wow.mp3` -> `!sb wow`). 
+* If filename has spaces, then only the first word is taken as sound name (`wow what.mp3` -> `wow`).
 
 The command takes the following options:
 
 * `r` -- *recursive*, to look for audio files in nested folders as well, and not only in `soundbank_path`;
 * `s` -- *strip prefix*, to strip everything until the first underscore when converting filename to sound name. E.g., sound `sounds/owen_wow.mp3` would be named `wow` by `!updatesb s`.
 * `f` -- *force*, to force-replace any existing sounds in the bank with new ones in case of conflicting sound names (otherwise conflicts are skipped).
-* `q` -- *quiet*, to suppress detailed reporting in the bot output (not in chat).
+* `q` -- *quiet*, to suppress detailed reporting in the bot output (does not affect the report posted in chat).
 
-The options can be combined: e.g., `!updatesb rs` scans `soundbank_path` and all nested folders and strips prefixes.
+The options can be combined: e.g., `!updatesb rs` scans `soundbank_path` and all nested folders *and* strips prefixes.
 
 To summarize, there are three ways to organize your sound collection: using whitespaces in filenames, using prefixes with underscores in filenames (with `s` option), and using subfolders (with `r` option).
+
+Note that many features above can create conflicts. E.g., if you have sounds named `wow.mp3` and `wow 2.mp3`, both of them will try to claim name `wow`. This is not allowed. If you want one command to pull a random sound from a pool of sounds, see [collections](#collections).
 
 
 ## Adding sounds: manual
 You can also add sounds to the soundbank manually using `!addsound` command. The syntax is:
 
-`!addsound <sndid> <filepath> [price=(price)] [pricemult=(pricemult)] [gain=(gain)]`
+`!addsound <sndid> <filepath> [price=<price>] [pricemult=<pricemult>] [gain=<gain>]`
 
 Example:
 `!addsound wow "owen/wow.mp3" pricemult=x1.5 gain=6`
@@ -129,9 +128,12 @@ If you would like to list all sounds currently present in the soundbank, use `!g
 
 # Modifying and deleting sounds
 
+This sections describes the commands for updating and removing/cleaning up the sound entries database.
+Note that if you want anyone except for the channel owner to use these commands (as well as the commands for adding sounds), you should add give them `sound` permission (see [PTBF readme](https://github.com/sharkbound/PythonTwitchBotFramework#permissions) for an explanation of permissions).
+
 ## Updating sound entries
 You can update the sound data using `!updatesnd`. Syntax: 
-`!updsound <sndid> [name=(new_sndid)] [price=(price)] [pricemult=(pricemult)] [gain=(gain)]`
+`!updsound <sndid> [name=<new_sndid?] [price=<price>] [pricemult=<pricemult>] [gain=<gain>]`
 Changing the filename is not possible, because it is too painful to parse them with regexp. But it is possible to change the sound name. All other options are the same as in [Adding sounds: manual](#adding-sounds-manual)
 
 ## Deleting a sound
@@ -145,7 +147,7 @@ To delete a sound named `sndid`, use `!delsound sndid`.
 
 
 # Collections
-Instead of playing a certain sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
+Instead of playing a *certain* sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
 
 To implement the idea described above (assuming you already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy`), you should add the following to the config (`<botfolder>/configs/config.json`):
 ```json
@@ -172,14 +174,14 @@ You can, of course, define multiple collections in the config file, separated by
 ## Collections: NOTES
 * Unlike the rest of the soundboard, collections are currently *not integrated into the bot economy*. I.e., playing a sound from a collection does **not** require channel currency. This is 90% lazy, 10% intentional. (Imagine a collection where one sound costs 10 moneys, another 30 moneys, and the viewer only has 20 moneys. Should the bot ignore an unfortunate roll altogether? Or should it restrict the roll to only affordable sounds? Or should there be a uniform price for the whole collection, possibly detached from the individual sound prices? The bot basically adopts the latter approach as of now, with a price set to zero, but a case can be made for either.) Create an issue on github if you ever need to integrate collections into the economy, and I'll probably be able to implement that.
 
-* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This is not a very meaningful distinction, and exists mostly for historical reasons. Replacing `!collection` with `!sb collection` should be easy; let me know via github issues if you ever need it. Replacing `!sb sound` with `!sound` *may* be feasible, but no guarantees there.
+* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This distinction is 100% lazy and exists mostly for historical reasons. Replacing `!collection` with `!sb collection` should be easy; let me know via github issues if you ever need it. Replacing `!sb sound` with `!sound` *may* be feasible, but no guarantees there.
 
 
 # Hotkeys
 
 You can use hotkeys to play sounds, directly or via collections. To do that, ensure first that you have [Pynput](https://pypi.org/project/pynput/) installed in your python distribution. Then add something like the following to your `<botfolder>/configs/config.json` file:
 ```
-  "soundbank_use_hotkeys": True
+  "soundbank_use_hotkeys": true
   "soundbank_hotkeys": {
     "<ctrl>+<shift>+s": "sound1"
   },
@@ -190,3 +192,7 @@ You can use hotkeys to play sounds, directly or via collections. To do that, ens
 ```
 
 Then after launching the bot, pressing the hotkeys defined in the configfile (on the same computer/os/user that the bot is launched from) should play the respective sound or a random sound from the respective collection.
+
+* `soundbank_hotkeys` (default: `None`): a dictionary of the form `<key>: "<sndid>"`, where `<sndid>` corresponds to a sound identifier (see [Adding sounds](#adding-sounds) below), and `<key>` corresponds to the shortcut you want to use.
+* `soundbank_hotkeys_collections` (default: `None`): a dictionary of the form `<key>: "<collection>"`, where `<collection>` corresponds to a collection identifier (see [Collections](#collections) below), and `<key>` corresponds to the shortcut you want to use.
+* `<key>` shortcuts must be of the form `"<ctrl>+<shift>+<cmd>+<alt>+q"`. [Pynput docs](https://pynput.readthedocs.io/en/latest/keyboard.html) may be helpful in figuring out how to construct the `<key>` string.

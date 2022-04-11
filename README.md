@@ -1,8 +1,10 @@
 # PythonTwitchBotFramework Soundboard mod
 
-This is an extension for [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. See the original readme and the [wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) for info on how to install, set up, and use the bot.
+This is an extension for [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. See [the original readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md) and  [the original wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) for info on how to install, set up, and use the bot.
 
-The soundboard currently integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
+As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
+
+The soundboard is designed for a *single-channel bot*. If you run one instance of the bot that is supposed to join multiple twitch channels and maintain separate soundboards for each channel, things **will** break down. Don't do this.
 
 
 # Dependencies
@@ -10,6 +12,7 @@ The soundboard currently integrates with the bot's own economy, but does not rea
 1. [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework), obviously
 2. [PyDub](https://github.com/jiaaro/pydub/) to play sounds. 
 3. WAV works with no further dependencies; for other formats you'll need [ffmpeg](http://www.ffmpeg.org/) or [libav](http://libav.org/) installed in the system.
+4. [Pynput](https://pypi.org/project/pynput/) (optional) for hotkey controls.
 
 
 # Installation
@@ -23,13 +26,60 @@ Create a `sounds` folder in your bot folder. Put some audio files in there, e.g.
 # Config options
 The following options are relevant for the soundboard and are set in `./config/config.json`:
 
+## General soundbank config
+
 * `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
 * `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use this. Note: this is applied when *adding* sounds, it does not retroactively change the price of previously added sounds.
 * `soundbank_verbose` (default: `True`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
 * `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 
+
+## Soundbank collections
+
 * `soundbank_use_collections` (default: `False`): are you using any soundboard collections? See [collections](#collections)
 * `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections)
+
+## Soundbank hotkeys
+
+* `soundbank_use_hotkeys` (default: `False`): should the bot react to hotkeys defined in the following config items?
+* `soundbank_hotkeys` (default: `None`): a dictionary of the form `<key>: "<sndid>"`, where `<sndid>` corresponds to a sound identifier (see [Adding sounds](#adding-sounds) below), and `<key>` corresponds to the shortcut you want to use, of the form `"<ctrl>+<shift>+<cmd>+<alt>+q"`. [Pynput docs](https://pynput.readthedocs.io/en/latest/keyboard.html) may be helpful in figuring out how to construct the `<key>` string.
+* `soundbank_hotkeys_collections` (default: `None`): a dictionary of the form `<key>: "<collection>"`, where `<collection>` corresponds to a collection identifier (see [Collections](#collections) below), and `<key>` corresponds to the shortcut you want to use, of the form `"<ctrl>+<shift>+<cmd>+<alt>+q"`. [Pynput docs](https://pynput.readthedocs.io/en/latest/keyboard.html) may be helpful in figuring out how to construct the `<key>` string.
+
+## Soundbank config example
+The following is an example of the part of the `<botfolder>/configs/config.json` file that defines some collections and some hotkeys. This is meant to go after any other config options and before the final closing `}`.
+```
+  "soundbank_path": "./sounds",
+  "soundbank_default_price": 20,
+  "soundbank_verbose": false,
+  "soundbank_gain": -7,
+  "soundbank_cooldown": 15,
+  "soundbank_use_collections": true,
+  "soundbank_collections": {
+    "hi": [
+      "hello",
+      "hellothere",
+      "hi"
+    ],
+    "bb": [
+      "boop",
+      "honk",
+      "wenk"
+    ],
+    "f": [
+      "unacceptable",
+      "wilhelm"
+    ]
+  },
+  "soundbank_use_hotkeys": True
+  "soundbank_hotkeys": {
+    "<ctrl>+<shift>+s": "honk"
+  },
+  "soundbank_hotkeys_collections": {
+    "<cmd>+<alt>+q": "hi",
+    "<cmd>+<alt>+w": "bb",
+    "<cmd>+<alt>+e": "f"
+  }
+```
 
 
 # Adding sounds
@@ -123,3 +173,20 @@ You can, of course, define multiple collections in the config file, separated by
 * Unlike the rest of the soundboard, collections are currently *not integrated into the bot economy*. I.e., playing a sound from a collection does **not** require channel currency. This is 90% lazy, 10% intentional. (Imagine a collection where one sound costs 10 moneys, another 30 moneys, and the viewer only has 20 moneys. Should the bot ignore an unfortunate roll altogether? Or should it restrict the roll to only affordable sounds? Or should there be a uniform price for the whole collection, possibly detached from the individual sound prices? The bot basically adopts the latter approach as of now, with a price set to zero, but a case can be made for either.) Create an issue on github if you ever need to integrate collections into the economy, and I'll probably be able to implement that.
 
 * Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This is not a very meaningful distinction, and exists mostly for historical reasons. Replacing `!collection` with `!sb collection` should be easy; let me know via github issues if you ever need it. Replacing `!sb sound` with `!sound` *may* be feasible, but no guarantees there.
+
+
+# Hotkeys
+
+You can use hotkeys to play sounds, directly or via collections. To do that, ensure first that you have [Pynput](https://pypi.org/project/pynput/) installed in your python distribution. Then add something like the following to your `<botfolder>/configs/config.json` file:
+```
+  "soundbank_use_hotkeys": True
+  "soundbank_hotkeys": {
+    "<ctrl>+<shift>+s": "sound1"
+  },
+  "soundbank_hotkeys_collections": {
+    "<cmd>+<alt>+q": "collection1",
+    "<cmd>+<alt>+w": "collection2"
+  }
+```
+
+Then after launching the bot, pressing the hotkeys defined in the configfile (on the same computer/os/user that the bot is launched from) should play the respective sound or a random sound from the respective collection.

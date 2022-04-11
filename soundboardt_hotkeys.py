@@ -44,7 +44,6 @@ if cfg.soundbank_hotkeys:
 
 if cfg.soundbank_hotkeys_collections:
     for key, collection in cfg.soundbank_hotkeys_collections.items():
-        print(key, collection)
         # Hotkey receiver needs a function with no arguments:
         exec(f"def hotkey_collection_{collection}(): hotkey_collection('{collection}')")
         exec(f"hotkeyDictionary[key] = hotkey_collection_{collection}")

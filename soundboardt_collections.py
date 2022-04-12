@@ -47,6 +47,7 @@ def play_collection(channel: str, colln: str):
         snd = get_sound(channel, rndchoice(SBCOLLECTIONS[channel][colln]))
         play_sound(snd)
     else: 
+        # This can only happen in a multi-channel setup
         raise InvalidArgumentsError(reason=f'There is no collection {colln} defined for channel {channel}!',
             cmd=play_collection)
 
@@ -68,6 +69,14 @@ async def accounting_collection(msg: Message, colln: str):
 
 
 if cfg.soundbank_use_collections:
+    # construct a full list of collections across all channels, to know which commands to create
+    collections_list = {}
+    for channel in SBCOLLECTIONS:
+        for colln in SBCOLLECTIONS[channel]:
+            if not colln in collections_list:
+                collections_list[colln] = []
+            collections_list[colln].append(channel)
+            
     # now just need to create a command for every collection.
     # I have not found a better way to do this than exec() plus a lot of jank.
     # !! Mind the indentation in the exec string !!

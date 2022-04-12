@@ -68,16 +68,6 @@ async def accounting_collection(msg: Message, colln: str):
 
 
 if cfg.soundbank_use_collections:
-    # need to construct (1) full list of collections across all channels and
-    # (2) a list of channels using a given collection
-    # Although is (2) really necessary?
-    collections_list = {}
-    for channel in SBCOLLECTIONS:
-        for colln in SBCOLLECTIONS[channel]:
-            if not colln in collections_list:
-                collections_list[colln] = []
-            collections_list[colln].append(channel)
-            
     # now just need to create a command for every collection.
     # I have not found a better way to do this than exec() plus a lot of jank.
     # !! Mind the indentation in the exec string !!

@@ -23,6 +23,10 @@ if 'soundbank_collections' not in cfg.data:
 else:
     SBCOLLECTIONS = cfg.soundbank_collections
 
+if 'soundbank_collections_permission' not in cfg.data: 
+    if 'soundbank_permission' not in cfg.data: cfg.data['soundbank_collections_permission']=''
+    else: cfg.data['soundbank_collections_permission']=cfg.soundbank_permission
+SB_COLLPERM = cfg.data['soundbank_collections_permission']
 
 #########################
 ###    Collections    ###
@@ -53,7 +57,7 @@ if cfg.soundbank_use_collections:
     # I have not found a better way to do this than exec() plus a lot of jank.
     # !! Mind the indentation in the exec string !!
     for colln in collections_list:
-        exec(f"""@Command('{colln}', syntax='', cooldown=cfg.soundbank_cooldown) 
+        exec(f"""@Command('{colln}', permission=SB_COLLPERM, syntax='', cooldown=cfg.soundbank_cooldown) 
 async def cmd_play_collection(msg: Message): 
     play_collection(msg.channel_name, '{colln}')""")
 

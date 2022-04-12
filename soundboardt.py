@@ -30,12 +30,14 @@ if 'soundbank_default_price' not in cfg.data: cfg.data['soundbank_default_price'
 if 'soundbank_verbose' not in cfg.data: cfg.data['soundbank_verbose']=True
 if 'soundbank_gain' not in cfg.data: cfg.data['soundbank_gain']=0
 if 'soundbank_cooldown' not in cfg.data: cfg.data['soundbank_cooldown']=15
+if 'soundbank_permission' not in cfg.data: cfg.data['soundbank_permission']=''
 cfg.save()
 
 PREFIX = cfg.prefix
 SB_COOLDOWN = cfg.soundbank_cooldown
 SB_PATH = cfg.soundbank_path
 SB_DEFPRICE = cfg.soundbank_default_price
+SB_PERM = cfg.soundbank_permission
 
 
 
@@ -322,7 +324,7 @@ async def cmd_upd_sound(msg: Message, *args):
     await msg.reply(f'successfully updated sound {snd.sndid}')
 
 
-@Command('sb', syntax='<sndid>', cooldown=SB_COOLDOWN, help='plays sound sndid from soundboard')
+@Command('sb', permission=SB_PERM, syntax='<sndid>', cooldown=SB_COOLDOWN, help='plays sound sndid from soundboard')
 async def cmd_get_sound(msg: Message, *args):
     # sanity checks:
     if not args:

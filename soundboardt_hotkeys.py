@@ -4,6 +4,7 @@ from soundboardt_collections import play_collection
 
 # pynput is an optional dependency; only attempt to import it if needed
 if 'soundbank_use_hotkeys' not in cfg.data: cfg.data['soundbank_use_hotkeys'] = False
+    cfg.save()
 elif cfg.soundbank_use_hotkeys == True:
     from pynput import keyboard 
     

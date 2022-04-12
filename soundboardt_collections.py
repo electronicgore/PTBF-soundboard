@@ -14,11 +14,12 @@ from soundboardt import Sound, get_sound, play_sound
 # These config sanity checks are extremely weak; it might be better to make them more strict and error messages more informative
 if 'soundbank_collections' not in cfg.data: 
     SBCOLLECTIONS = {}
-    if 'soundbank_use_collections' == True: 
+    if cfg.data['soundbank_use_collections'] == True: 
         cfg.data['soundbank_use_collections'] = False; 
         print('Warning: config says to use soundboard collections, but none are defined! Cancelling!')
     elif 'soundbank_use_collections' not in cfg.data: 
         cfg.data['soundbank_use_collections'] = False
+    cfg.save()
 else:
     SBCOLLECTIONS = cfg.soundbank_collections
 

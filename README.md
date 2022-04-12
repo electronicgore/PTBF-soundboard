@@ -32,10 +32,12 @@ The following options are relevant for the soundboard and are set in `./config/c
 * `soundbank_verbose` (default: `true`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
 * `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 
+* `soundbank_permission` (default: ``): set the permission group for playing sounds from the bank. By default everyone in chat can use the `!sb` command (see [PTBF readme](https://github.com/sharkbound/PythonTwitchBotFramework#permissions) for an explanation of permissions).
 
 ## Soundbank collections
 * `soundbank_use_collections` (default: `false`): are you using any soundboard collections? See [collections](#collections)
 * `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections) for more details.
+* `soundbank_collections_permission`: set the permission group for playing sounds from the soundbank collections. If unset, defaults to the value set in `soundbank_permission`. If that is not set either, defaults to unrestricted access.
 
 ## Soundbank hotkeys
 * `soundbank_use_hotkeys` (default: `false`): should the bot react to hotkeys defined in the following config items?

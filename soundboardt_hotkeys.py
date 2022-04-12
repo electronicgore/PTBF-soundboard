@@ -1,7 +1,3 @@
-from pydub import AudioSegment as pd_audio
-from pydub.playback import play as pd_play
-from random import choice as rndchoice
-
 from twitchbot import cfg
 from soundboardt import play_sound
 from soundboardt_collections import play_collection

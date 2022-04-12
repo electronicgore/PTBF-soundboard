@@ -1,5 +1,3 @@
-from pydub import AudioSegment as pd_audio
-from pydub.playback import play as pd_play
 from twitchbot import (
     Command,
     Message,

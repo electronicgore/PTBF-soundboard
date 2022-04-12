@@ -26,7 +26,7 @@ __all__ = ('Sound', 'get_sound')
 ####################
 
 if 'soundbank_path' not in cfg.data: cfg.data['soundbank_path']='./sounds'
-if 'soundbank_default_price' not in cfg.data: cfg.data['soundbank_default_price']=50
+if 'soundbank_default_price' not in cfg.data: cfg.data['soundbank_default_price']=0
 if 'soundbank_verbose' not in cfg.data: cfg.data['soundbank_verbose']=True
 if 'soundbank_gain' not in cfg.data: cfg.data['soundbank_gain']=0
 if 'soundbank_cooldown' not in cfg.data: cfg.data['soundbank_cooldown']=15

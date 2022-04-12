@@ -28,7 +28,7 @@ The following options are relevant for the soundboard and are set in `./config/c
 
 ## General soundbank config
 * `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
-* `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use this. Note: this is applied when *adding* sounds, changing it does not retroactively change the price of previously added sounds.
+* `soundbank_default_price` (default: `0`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use the bot economy for sounds. Note: this default is applied when *adding* sounds, changing it does not retroactively change the price of previously added sounds.
 * `soundbank_verbose` (default: `true`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
 * `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 

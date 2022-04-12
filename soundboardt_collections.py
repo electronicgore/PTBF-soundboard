@@ -6,7 +6,7 @@ from twitchbot import (
     cfg
 )
 from random import choice as rndchoice
-from soundboardt import Sound, get_sound
+from soundboardt import Sound, get_sound, play_sound
 
 
 ####################
@@ -34,8 +34,7 @@ def play_collection(channel: str, colln: str):
     if colln in SBCOLLECTIONS[channel]:
         print(f'Playing a random sound from collection "{colln}" in channel "{channel}"')
         snd = get_sound(channel, rndchoice(SBCOLLECTIONS[channel][colln]))
-        sound = pd_audio.from_file(snd.filepath) + cfg.soundbank_gain
-        pd_play(sound)
+        play_sound(snd)
     else: 
         raise InvalidArgumentsError(reason=f'There is no collection {colln} defined for channel {channel}!',
             cmd=play_collection)

@@ -87,6 +87,16 @@ def get_sound(channel: str, sndid: str) -> Optional[Sound]:
     """return a Sound object from the soundback given sndid"""
     assert isinstance(sndid, str), 'sound sndid must be of type str'
     return session.query(Sound).filter(Sound.channel == channel, Sound.sndid == sndid).one_or_none()
+    
+
+def play_sound(snd: Sound):
+    """physically play a Sound object on the running pc"""
+    if snd.gain:
+        gain = snd.gain
+    else:
+        gain = 0
+    sound = pd_audio.from_file(snd.filepath) + cfg.soundbank_gain + gain
+    pd_play(sound)
 
 
 def delete_sound(channel: str, sndid: str) -> None:
@@ -343,14 +353,7 @@ async def cmd_get_sound(msg: Message, *args):
     if cfg.soundbank_verbose:
         await msg.reply(f'{msg.author} played "{snd.sndid}" for {price} {currency}')
     
-    # play the sound with PyDub; supports all formats supported by ffmpeg.
-    # Tested with mp3, wav, ogg.
-    if snd.gain:
-        gain = snd.gain
-    else:
-        gain = 0
-    sound = pd_audio.from_file(snd.filepath) + cfg.soundbank_gain + gain
-    pd_play(sound)
+    play_sound(snd)
 
 
 @Command('delsound', permission='sound', syntax='<sndid>', help='deletes the sound from the soundboard')

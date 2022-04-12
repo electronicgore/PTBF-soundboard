@@ -28,7 +28,7 @@ The following options are relevant for the soundboard and are set in `./config/c
 
 ## General soundbank config
 * `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
-* `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use this. Note: this is applied when *adding* sounds, it does not retroactively change the price of previously added sounds.
+* `soundbank_default_price` (default: `50`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use this. Note: this is applied when *adding* sounds, changing it does not retroactively change the price of previously added sounds.
 * `soundbank_verbose` (default: `true`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
 * `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 
@@ -38,6 +38,7 @@ The following options are relevant for the soundboard and are set in `./config/c
 * `soundbank_use_collections` (default: `false`): are you using any soundboard collections? See [collections](#collections)
 * `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections) for more details.
 * `soundbank_collections_permission`: set the permission group for playing sounds from the soundbank collections. If unset, defaults to the value set in `soundbank_permission`. If that is not set either, defaults to unrestricted access.
+* `soundbank_collections_price` (default: `0`): price for playing a sound from (any) collection. Per-collection prices are not implemented, sorry.
 
 ## Soundbank hotkeys
 * `soundbank_use_hotkeys` (default: `false`): should the bot react to hotkeys defined in the following config items?
@@ -71,6 +72,7 @@ The following is an example of the part of the `<botfolder>/configs/config.json`
      ]
     }
   },
+  "soundbank_collections_price": 10,
   "soundbank_use_hotkeys": true,
   "soundbank_hotkeys": {
     "<ctrl>+<shift>+s": "honk"

@@ -23,10 +23,18 @@ if 'soundbank_collections' not in cfg.data:
 else:
     SBCOLLECTIONS = cfg.soundbank_collections
 
+
 if 'soundbank_collections_permission' not in cfg.data: 
     if 'soundbank_permission' not in cfg.data: cfg.data['soundbank_collections_permission']=''
     else: cfg.data['soundbank_collections_permission']=cfg.soundbank_permission
-SB_COLLPERM = cfg.data['soundbank_collections_permission']
+SBCOLL_PERM = cfg.data['soundbank_collections_permission']
+
+
+if 'soundbank_collections_price' not in cfg.data:
+    SBCOLL_PRICE = 0
+else:
+    SBCOLL_PRICE = cfg.soundbank_collections_price
+
 
 #########################
 ###    Collections    ###
@@ -41,6 +49,23 @@ def play_collection(channel: str, colln: str):
     else: 
         raise InvalidArgumentsError(reason=f'There is no collection {colln} defined for channel {channel}!',
             cmd=play_collection)
+
+
+async def accounting_collection(msg: Message, colln: str):
+    """Expropriate the points from the message author who dared to play a collection sound"""
+    if SBCOLL_PRICE==0:
+        # Nothing to do if things are free
+        return
+    else:
+        currency = get_currency_name(msg.channel_name).name
+        if get_balance_from_msg(msg).balance < SBCOLL_PRICE:
+            raise InvalidArgumentsError(f'{msg.author} tried to play a sound from "{colln}" '
+                f'for {SBCOLL_PRICE} {currency}, but they do not have enough {currency}!')
+        subtract_balance(msg.channel_name, msg.author, SBCOLL_PRICE)
+        
+        if cfg.soundbank_verbose:
+            await msg.reply(f'{msg.author} played "{snd.sndid}" for {price} {currency}')
+
 
 if cfg.soundbank_use_collections:
     # need to construct (1) full list of collections across all channels and
@@ -57,7 +82,9 @@ if cfg.soundbank_use_collections:
     # I have not found a better way to do this than exec() plus a lot of jank.
     # !! Mind the indentation in the exec string !!
     for colln in collections_list:
-        exec(f"""@Command('{colln}', permission=SB_COLLPERM, syntax='', cooldown=cfg.soundbank_cooldown) 
+        exec(f"""@Command('{colln}', permission=SBCOLL_PERM, syntax='', cooldown=cfg.soundbank_cooldown) 
 async def cmd_play_collection(msg: Message): 
-    play_collection(msg.channel_name, '{colln}')""")
+    try: await accounting_collection(msg, '{colln}')
+    except: pass
+    else: play_collection(msg.channel_name, '{colln}')""")
 

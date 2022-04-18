@@ -70,6 +70,7 @@ async def accounting_collection(msg: Message, colln: str):
 
 if cfg.soundbank_use_collections:
     # construct a full list of collections across all channels, to know which commands to create
+    # outputs a dictionary of the form "collection": ("channel1", "channel2", ...)
     collections_list = {}
     for channel in SBCOLLECTIONS:
         for colln in SBCOLLECTIONS[channel]:

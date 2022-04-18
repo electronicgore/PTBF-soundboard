@@ -11,6 +11,7 @@ For any questions or feature requests, open an issue on github.
 
 1. [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework), obviously
 2. [PyDub](https://github.com/jiaaro/pydub/) to play sounds. 
+	* If you are on windows and you get a permission error when trying to play sounds, see [PyDub issue 209](https://github.com/jiaaro/pydub/issues/209). The issue can be fixed by a one-line patch to the installed PyDub scripts. But simply installing SimpleAudio works for some people too.
 3. WAV works with no further dependencies; for other formats you'll need [ffmpeg](http://www.ffmpeg.org/) or [libav](http://libav.org/) installed in the system.
 4. [Pynput](https://pypi.org/project/pynput/) (optional) for hotkey controls.
 

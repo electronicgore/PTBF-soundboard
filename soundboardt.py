@@ -334,7 +334,9 @@ async def cmd_get_sound(msg: Message, *args):
 
     snd = get_sound(msg.channel_name, args[0])
     if snd is None:
-        raise InvalidArgumentsError(reason='no sound found with this name', cmd=cmd_get_sound)
+        #raise InvalidArgumentsError(reason='no sound found with this name', cmd=cmd_get_sound)
+        await msg.reply(f'no sound found with name "{args[0]}"')
+        return
     
     # calculate the sound price
     if snd.price:

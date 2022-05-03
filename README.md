@@ -47,7 +47,7 @@ The following options are relevant for the soundboard and are set in `./config/c
 * `soundbank_hotkeys` (default: `None`) and `soundbank_hotkeys_collections` (default: `None`) defines hotkeys and respective sounds/collections; see [hotkeys](#hotkeys) for more details.
 
 ## Soundbank config example
-The following is an example of the part of the `<botfolder>/configs/config.json` file that defines some collections and some hotkeys. This is meant to go after any other config options and before the final closing `}` (so to clarify, this is not a complete `config.json` file!).
+The following is an example of the part of the `<botfolder>/configs/config.json` file that defines some collections and some hotkeys. This is meant to go after any other config options and before the final closing `}` (so to clarify, this is *not* a complete `config.json` file!).
 ```
   "soundbank_path": "./sounds",
   "soundbank_default_price": 20,
@@ -157,11 +157,11 @@ To delete a sound named `sndid`, use `!delsound sndid`.
 # Collections
 Instead of playing a *certain* sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
 
-To implement the idea described above (assuming you already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`):
+To implement the idea described above (assuming you already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`, replacing `<yourtwitchchannel>` with your channel name):
 ```json
 "soundbank_use_collections": true,
 "soundbank_collections": {
-  "channel": {
+  "<yourtwitchchannel>": {
     "whoa": ["wow", "ohmy"]
   }
 }
@@ -173,7 +173,7 @@ You can, of course, define multiple collections in the config file, separated by
 ```json
 "soundbank_use_collections": true,
 "soundbank_collections": {
-  "channel": {
+  "<yourtwitchchannel>": {
     "whoa": ["wow", "ohmy"],
     "f": ["payrespects", "wilhelmscream", "overconfidence"]
   }
@@ -184,10 +184,10 @@ And, in principle, you can have different collections for different twitch chann
 ```json
 "soundbank_use_collections": true,
 "soundbank_collections": {
-  "channel": {
+  "<yourtwitchchannel>": {
     "whoa": ["wow", "ohmy"]
   },
-  "anotherchannel":{
+  "<anotherchannel>":{
     "whoa": ["wilhelmscream", "overconfidence"]
   }
 }

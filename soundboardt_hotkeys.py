@@ -10,28 +10,25 @@ elif cfg.soundbank_use_hotkeys == True:
     from pynput import keyboard 
     
 
-
 if 'soundbank_hotkeys_channel' not in cfg.data: 
     CHANNEL = cfg.channels[0]
 else:
     CHANNEL = cfg.soundbank_hotkeys_channel
 
 
-hotkeyDictionary = {}
+if cfg.soundbank_use_hotkeys:
+	hotkeyDictionary = {}
+	if cfg.soundbank_hotkeys:
+		for key, snd in cfg.soundbank_hotkeys.items():
+			# Hotkey receiver needs a function with no arguments:
+			exec(f"def hotkey_sound_{snd}(): play_sound(get_sound('{CHANNEL}', '{snd}'))")
+			exec(f"hotkeyDictionary['{key}'] = hotkey_sound_{snd}")
 
-if cfg.soundbank_hotkeys:
-    for key, snd in cfg.soundbank_hotkeys.items():
-        # Hotkey receiver needs a function with no arguments:
-        #exec(f"def hotkey_sound_{snd}(): hotkey_sound('{snd}')")
-        exec(f"def hotkey_sound_{snd}(): play_sound(get_sound('{CHANNEL}', '{snd}'))")
-        exec(f"hotkeyDictionary['{key}'] = hotkey_sound_{snd}")
+	if cfg.soundbank_hotkeys_collections:
+		for key, collection in cfg.soundbank_hotkeys_collections.items():
+			# Hotkey receiver needs a function with no arguments:
+			exec(f"def hotkey_collection_{collection}(): play_collection('{CHANNEL}', '{collection}')")
+			exec(f"hotkeyDictionary['{key}'] = hotkey_collection_{collection}")
 
-if cfg.soundbank_hotkeys_collections:
-    for key, collection in cfg.soundbank_hotkeys_collections.items():
-        # Hotkey receiver needs a function with no arguments:
-        exec(f"def hotkey_collection_{collection}(): play_collection('{CHANNEL}', '{collection}')")
-        exec(f"hotkeyDictionary['{key}'] = hotkey_collection_{collection}")
-
-
-hotkeyListener = keyboard.GlobalHotKeys(hotkeyDictionary)
-hotkeyListener.start()
+	hotkeyListener = keyboard.GlobalHotKeys(hotkeyDictionary)
+	hotkeyListener.start()

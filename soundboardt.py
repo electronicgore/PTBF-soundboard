@@ -75,7 +75,7 @@ def add_sound(snd: Sound) -> str:
     if sound_exist(snd.channel, snd.sndid, snd.filepath):
         resp = f'failed to add sound: sound "{sndid}" already exists in soundbank'
         return resp
-    
+
     if pd_mediainfo(snd.filepath):
         session.add(snd)
         session.commit()
@@ -89,7 +89,7 @@ def get_sound(channel: str, sndid: str) -> Optional[Sound]:
     """return a Sound object from the soundback given sndid"""
     assert isinstance(sndid, str), 'sound sndid must be of type str'
     return session.query(Sound).filter(Sound.channel == channel, Sound.sndid == sndid).one_or_none()
-    
+
 
 def play_sound(snd: Sound):
     """physically play a Sound object on the running pc"""
@@ -123,7 +123,7 @@ def clean_sb(channel: str, verbose: bool = True) -> int:
             num+=1
             if verbose:
                 print(f'sound "{snd.sndid}" has been deleted because the associated file was not found ({snd.filepath})')
-            
+
     session.commit()
     return num
 
@@ -134,9 +134,9 @@ def _filename_strip(filename: str, strip_prefix: bool = False) -> str:
     # first identify and strip the prefix, if any and if needed
     if strip_prefix:
         prefixpos = filename.find("_")
-    else: 
+    else:
         prefixpos = -1
-    
+
     # then strip the file extension (defined via the last dot)
     # also drop anything after the first space because no spaces allowed in sndid
     suffixpos1 = filename.rfind(".")
@@ -150,16 +150,16 @@ def _filename_strip(filename: str, strip_prefix: bool = False) -> str:
         suffixpos = suffixpos2
     else:
         suffixpos = None
-    
+
     return filename[prefixpos+1:suffixpos]
 
 
-def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace: bool = False, 
+def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace: bool = False,
             strip_prefix: bool = False, verbose: bool = True):
     """auto-fill the soundbank (for given channel) from files in the specified folder"""
     if not os.path.exists(path):
         return False
-    
+
     # Generate the relevant list of files
     scanfiles = []
     if recursive:
@@ -171,21 +171,21 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace:
             if os.path.isdir(file):
                 continue
             scanfiles.append([path, file])
-    
+
     # Attempt to import files into database
     num_a=0
     num_r=0
     for froot,fname in scanfiles:
         # Generate full file path
         fpath = os.path.join(froot, fname)
-        
-        # Check if pydub can recognize these files 
+
+        # Check if pydub can recognize these files
         if not pd_mediainfo(fpath):
             continue
-        
+
         sndid = _filename_strip(fname, strip_prefix).lower()
         snd = Sound.create(channel=channel, sndid=sndid, filepath=fpath)
-        
+
         # Try to add the file
         sndex = get_sound(channel=channel, sndid=sndid)
         if not sndex:
@@ -205,10 +205,10 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace:
         else:
             # sndid exists but points to a different file
             resp = f'failed to add sound "{sndid}" from {fpath}: sndid already taken by {sndex.filepath}'
-        
+
         if verbose:
             print(resp)
-    
+
     session.commit()
     if verbose:
         print('changes to db successfully committed')
@@ -220,7 +220,7 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace:
 ###    Bot commands    ###
 ##########################
 
-@Command('addsound', permission='sound', syntax='<sndid> <filepath> price=(price) pricemult=(pricemult) gain=(gain)', 
+@Command('addsound', permission='sound', syntax='<sndid> <filepath> price=(price) pricemult=(pricemult) gain=(gain)',
     help='adds a sound to the soundboard')
 async def cmd_add_sound(msg: Message, *args):
     # sanity checks
@@ -233,11 +233,11 @@ async def cmd_add_sound(msg: Message, *args):
 
     optionals = ' '.join(args[2:])
     optargs = {}
-    
+
     if 'price=' in optionals and 'pricemult=' in optionals:
         raise InvalidArgumentsError(reason='specify price or pricemult, not both!',
             cmd=cmd_add_sound)
-    
+
     if 'price=' in optionals:
         m = re.search(r'price=(\d+)', msg.content)
         if m:
@@ -246,7 +246,7 @@ async def cmd_add_sound(msg: Message, *args):
             raise InvalidArgumentsError(
                 reason='invalid price for price=, must be an INT',
                         cmd=cmd_add_sound)
-    
+
     if 'pricemult=' in optionals:
         m = re.search(r'pricemult=(x?)(\d+.\d*)', msg.content)
         if m and float(m.group(2))>=0:
@@ -255,31 +255,31 @@ async def cmd_add_sound(msg: Message, *args):
             raise InvalidArgumentsError(
                 reason='invalid argument for pricemult=, must be a non-negative '+
                 'FLOAT or xFLOAT, e.g., 0.7 or x1.4', cmd=cmd_add_sound)
-    
+
     if 'gain=' in optionals:
         m = re.search(r'gain=(-?\d+.\d*)', msg.content)
         if m:
             optargs['gain'] = float(m.group(1))
-        else: 
+        else:
             raise InvalidArgumentsError(
                 reason='invalid gain for gain=, must be a FLOAT, e.g., -1.4',
                     cmd=cmd_add_sound)
-    
+
     snd = Sound.create(channel=msg.channel_name, sndid=sndid, filepath=filepath, **optargs)
     resp = add_sound(snd)
     await msg.reply(resp)
 
 
-@Command('updsound', permission='sound', syntax='<sndid> name=(new_sndid) price=(price) pricemult=(pricemult) gain=(gain)', 
+@Command('updsound', permission='sound', syntax='<sndid> name=(new_sndid) price=(price) pricemult=(pricemult) gain=(gain)',
     help='updates sound details in the soundboard')
 async def cmd_upd_sound(msg: Message, *args):
     # this largely follows the same steps as addsound
     snd = get_sound(msg.channel_name, args[0])
     if snd is None:
         raise InvalidArgumentsError(reason='no sound found with this name', cmd=cmd_upd_sound)
-        
+
     optionals = ' '.join(args[2:])
-    
+
     if 'name' in optionals:
         m = re.search(r'name=(\w+)', msg.content)
         if m:
@@ -288,11 +288,11 @@ async def cmd_upd_sound(msg: Message, *args):
             raise InvalidArgumentsError(
                 reason='invalid new name for name=',
                         cmd=cmd_upd_sound)
-    
+
     if 'price=' in optionals and 'pricemult=' in optionals:
         raise InvalidArgumentsError(reason='specify price or pricemult, not both!',
             cmd=cmd_upd_sound)
-    
+
     if 'price=' in optionals:
         m = re.search(r'price=(\d+)', msg.content)
         if m:
@@ -301,7 +301,7 @@ async def cmd_upd_sound(msg: Message, *args):
             raise InvalidArgumentsError(
                 reason='invalid price for price=, must be an INT',
                         cmd=cmd_upd_sound)
-    
+
     if 'pricemult=' in optionals:
         m = re.search(r'pricemult=(x?)(\d+.\d*)', msg.content)
         if m and float(m.group(2))>=0:
@@ -310,16 +310,16 @@ async def cmd_upd_sound(msg: Message, *args):
             raise InvalidArgumentsError(
                 reason='invalid argument for pricemult=, must be a non-negative '+
                 'FLOAT or xFLOAT, e.g., 0.7 or x1.4', cmd=cmd_upd_sound)
-    
+
     if 'gain=' in optionals:
         m = re.search(r'gain=(-?\d+.\d*)', msg.content)
         if m:
             snd.gain = float(m.group(1))
-        else: 
+        else:
             raise InvalidArgumentsError(
                 reason='invalid gain for gain=, must be a FLOAT, e.g., -1.4',
                     cmd=cmd_add_sound)
-    
+
     session.commit()
     await msg.reply(f'successfully updated sound {snd.sndid}')
 
@@ -337,7 +337,7 @@ async def cmd_get_sound(msg: Message, *args):
         #raise InvalidArgumentsError(reason='no sound found with this name', cmd=cmd_get_sound)
         await msg.reply(f'no sound found with name "{args[0]}"')
         return
-    
+
     # calculate the sound price
     if snd.price:
         price = snd.price
@@ -345,18 +345,18 @@ async def cmd_get_sound(msg: Message, *args):
         price = snd.pricemult*SB_DEFPRICE
     else:
         price = SB_DEFPRICE
-    
+
     # make the author pay the price:
     currency = get_currency_name(msg.channel_name).name
     if get_balance_from_msg(msg).balance < price:
         raise InvalidArgumentsError(f'{msg.author} tried to play {snd.sndid} '
             f'for {price} {currency}, but they do not have enough {currency}!')
     subtract_balance(msg.channel_name, msg.author, price)
-    
+
     # report success
     if cfg.soundbank_verbose:
         await msg.reply(f'{msg.author} played "{snd.sndid}" for {price} {currency}')
-    
+
     play_sound(snd)
 
 
@@ -368,7 +368,7 @@ async def cmd_del_sound(msg: Message, *args):
     snd = get_sound(msg.channel_name, args[0])
     if snd is None:
         raise InvalidArgumentsError(reason='no such sound found', cmd=cmd_del_sound)
-    
+
     delete_sound(msg.channel_name, snd.sndid)
     await msg.reply(f'successfully deleted sound "{snd.sndid}"')
 
@@ -388,18 +388,23 @@ async def cmd_clean_sb(msg: Message, *args):
         verbose=True
     num = clean_sb(channel=msg.channel_name, verbose=verbose)
     await msg.reply(f'{num} sounds with missing files were deleted')
-    
 
-@Command('updatesb', permission='sound', syntax='[r]ecursive [s]trip [f]orce [q]uiet',
+
+@Command('updatesb', permission='sound', syntax='[c]lean [r]ecursive [s]trip [f]orce [q]uiet',
     help='auto-imports sounds from the filesystem')
 async def cmd_upd_sb(msg: Message, *args):
     optionals = ' '.join(args)
-    rec = True if ('r' in optionals) else False 
-    strip = True if ('s' in optionals) else False 
-    replace = True if ('f' in optionals) else False 
-    quiet = True if ('q' in optionals) else False 
-    
-    num_a,num_r = populate_sb(channel=msg.channel_name, path=SB_PATH, recursive=rec, 
+    cln = True if ('c' in optionals) else False
+    rec = True if ('r' in optionals) else False
+    strip = True if ('s' in optionals) else False
+    replace = True if ('f' in optionals) else False
+    quiet = True if ('q' in optionals) else False
+
+    if cln:
+        num = clean_sb(channel=msg.channel_name, verbose=not quiet)
+        await msg.reply(f'{num} sounds with missing files were deleted')
+
+    num_a,num_r = populate_sb(channel=msg.channel_name, path=SB_PATH, recursive=rec,
             replace=replace, strip_prefix=strip, verbose=not quiet)
     if replace:
         await msg.reply(f'soundbank updated; {num_a} sounds added, {num_r} sounds replaced')

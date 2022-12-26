@@ -32,7 +32,10 @@ SBCOLL_PERM = cfg.data['soundbank_collections_permission']
 
 
 if 'soundbank_collections_price' not in cfg.data:
-    SBCOLL_PRICE = 0
+    if 'soundbank_default_price' in cfg.data:
+        SBCOLL_PRICE = cfg.soundbank_default_price
+    else:
+        SBCOLL_PRICE = 0
 else:
     SBCOLL_PRICE = cfg.soundbank_collections_price
 

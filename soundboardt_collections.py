@@ -56,8 +56,9 @@ def play_collection(channel: str, colln: str):
     """Play a sound from the required collection in a given channel, with the channel inferred from the chat message"""
     if colln in SBCOLLECTIONS[channel]:
         if is_channel_sb_off_cooldown(channel):
-            print(f'Playing a random sound from collection "{colln}" in channel "{channel}"')
-            snd = get_sound(channel, rndchoice(SBCOLLECTIONS[channel][colln]))
+            RNDSND = rndchoice(SBCOLLECTIONS[channel][colln])
+            print(f'Playing random sound "{RNDSND}" from collection "{colln}" in channel "{channel}"')
+            snd = get_sound(channel, RNDSND)
             play_sound(snd)
         else:
             print(f'Soundbank is on cooldown')

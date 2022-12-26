@@ -17,7 +17,6 @@ from twitchbot import (
 )
 
 __all__ = ('Sound', 'get_sound')
-#__all__ = ('add_sound', 'get_sound', 'delete_sound', 'purge_sb', 'clean_sb', 'populate_sb')
 
 
 
@@ -28,9 +27,21 @@ __all__ = ('Sound', 'get_sound')
 if 'soundbank_path' not in cfg.data: cfg.data['soundbank_path']='./sounds'
 if 'soundbank_default_price' not in cfg.data: cfg.data['soundbank_default_price']=0
 if 'soundbank_verbose' not in cfg.data: cfg.data['soundbank_verbose']=True
-if 'soundbank_gain' not in cfg.data: cfg.data['soundbank_gain']=0
+#if 'soundbank_gain' not in cfg.data: cfg.data['soundbank_gain']=0
 if 'soundbank_cooldown' not in cfg.data: cfg.data['soundbank_cooldown']=15
 if 'soundbank_permission' not in cfg.data: cfg.data['soundbank_permission']=''
+
+if 'soundbank_gain' not in cfg.data:
+    cfg.data['soundbank_gain']={}
+else:
+    # This next check is needed for migration from an earlier version of the config
+    try:
+        float(cfg.soundbank_gain)
+    except:
+        pass
+    else:
+        cfg.data['soundbank_gain']={}
+
 cfg.save()
 
 PREFIX = cfg.prefix
@@ -38,6 +49,9 @@ SB_COOLDOWN = cfg.soundbank_cooldown
 SB_PATH = cfg.soundbank_path
 SB_DEFPRICE = cfg.soundbank_default_price
 SB_PERM = cfg.soundbank_permission
+SB_GAIN = cfg.soundbank_gain
+
+
 
 
 
@@ -91,13 +105,11 @@ def get_sound(channel: str, sndid: str) -> Optional[Sound]:
     return session.query(Sound).filter(Sound.channel == channel, Sound.sndid == sndid).one_or_none()
 
 
-def play_sound(snd: Sound):
+def play_sound(snd: Sound, gain: float = 0):
     """physically play a Sound object on the running pc"""
     if snd.gain:
-        gain = snd.gain
-    else:
-        gain = 0
-    sound = pd_audio.from_file(snd.filepath) + cfg.soundbank_gain + gain
+        gain += snd.gain
+    sound = pd_audio.from_file(snd.filepath) + gain
     pd_play(sound)
 
 
@@ -353,11 +365,17 @@ async def cmd_get_sound(msg: Message, *args):
             f'for {price} {currency}, but they do not have enough {currency}!')
     subtract_balance(msg.channel_name, msg.author, price)
 
+    # add the per-channel volume gain
+    if msg.channel_name in SB_GAIN:
+        gain = SB_GAIN[msg.channel_name]
+    else:
+        gain = 0
+
     # report success
     if cfg.soundbank_verbose:
         await msg.reply(f'{msg.author} played "{snd.sndid}" for {price} {currency}')
 
-    play_sound(snd)
+    play_sound(snd, gain)
 
 
 @Command('delsound', permission='sound', syntax='<sndid>', help='deletes the sound from the soundboard')
@@ -429,3 +447,22 @@ async def cmd_gen_sb_list(msg: Message):
             f.write(f'{PREFIX}sb {snd.sndid}\t\t{price} {currency}\n')
     await msg.reply(f'sound list generated')
 
+
+@Command('sbvol', permission='sound', syntax='(gain)', help='changes the soundbank volume gain, in db')
+async def cmd_sbvol(msg: Message, *args):
+    if msg.channel_name not in SB_GAIN:
+        SB_GAIN[msg.channel_name] = 0
+    if not args:
+        await msg.reply(f'current soundbank volume gain for current channel: {SB_GAIN[msg.channel_name]}')
+        return
+
+    try:
+        delta = float(args[0])
+    except:
+        await msg.reply(f'error: the argument of sbvol should be a float!')
+        return
+
+    SB_GAIN[msg.channel_name] += delta
+    cfg.data['soundbank_gain'] = SB_GAIN
+    cfg.save()
+    await msg.reply(f'soundbank volume gain for current channel changed by {delta}; current gain: {SB_GAIN[msg.channel_name]}')

@@ -340,13 +340,11 @@ async def cmd_upd_sound(msg: Message, *args):
 async def cmd_get_sound(msg: Message, *args):
     # sanity checks:
     if not args:
-        #raise InvalidArgumentsError(reason='missing required argument', cmd=cmd_get_sound)
         await msg.reply(f'You can play sounds from the soundboard with "!sb <sndname>".')
         return
 
-    snd = get_sound(msg.channel_name, args[0])
+    snd = get_sound(msg.channel_name, args[0].lower())
     if snd is None:
-        #raise InvalidArgumentsError(reason='no sound found with this name', cmd=cmd_get_sound)
         await msg.reply(f'no sound found with name "{args[0]}"')
         return
 
@@ -365,7 +363,7 @@ async def cmd_get_sound(msg: Message, *args):
             f'for {price} {currency}, but they do not have enough {currency}!')
     subtract_balance(msg.channel_name, msg.author, price)
 
-    # add the per-channel volume gain
+    # get the per-channel volume gain
     if msg.channel_name in SB_GAIN:
         gain = SB_GAIN[msg.channel_name]
     else:
@@ -448,7 +446,8 @@ async def cmd_gen_sb_list(msg: Message):
     await msg.reply(f'sound list generated')
 
 
-@Command('sbvol', permission='sound', syntax='(gain)', help='changes the soundbank volume gain, in db')
+@Command('sbvol', permission='sound', syntax='<optional:sndid> <gain>',
+    help='changes either the soundbank volume gain, or the gain of an individual sound, in db')
 async def cmd_sbvol(msg: Message, *args):
     if msg.channel_name not in SB_GAIN:
         SB_GAIN[msg.channel_name] = 0
@@ -457,12 +456,37 @@ async def cmd_sbvol(msg: Message, *args):
         return
 
     try:
+        # no sndname given; change global volume
         delta = float(args[0])
     except:
-        await msg.reply(f'error: the argument of sbvol should be a float!')
-        return
+        # change the volume of a given sound
+        sndid = args[0]
+        try:
+            delta = float(args[1])
+        except:
+            pass
 
-    SB_GAIN[msg.channel_name] += delta
-    cfg.data['soundbank_gain'] = SB_GAIN
-    cfg.save()
-    await msg.reply(f'soundbank volume gain for current channel changed by {delta}; current gain: {SB_GAIN[msg.channel_name]}')
+    if 'sndid' in locals():
+        # best guess is we're trying to change a given sound gain
+        snd = get_sound(msg.channel_name, sndid)
+        if snd is None:
+            await msg.reply(f'no sound found with name "{sndid}"')
+            return
+        if 'delta' in locals():
+            # found a sound with a given name and are trying to change its gain
+            if snd.gain:
+                snd.gain += delta
+            else:
+                snd.gain = delta
+            await msg.reply(f'volume gain of sound "{sndid}" changed by {delta}; current gain: {snd.gain}')
+        else:
+            # found a sound, but no gain given (or can't convert it to float)
+            await msg.reply(f'current volume gain of sound "{sndid}": {snd.gain}')
+        return
+    else:
+        # no sndname given (first argument is a float),
+        SB_GAIN[msg.channel_name] += delta
+        cfg.data['soundbank_gain'] = SB_GAIN
+        cfg.save()
+        await msg.reply(f'soundbank volume gain for current channel changed by {delta}; current gain: {SB_GAIN[msg.channel_name]}')
+        return

@@ -215,6 +215,8 @@ You can have different collections for different twitch channels (could be usefu
 
 * Same as you can have different sounds in different channels, you can have different collections in different channels. Collections from different channels can have the same name. There is currently no easy way to make collections (or sounds) portable across channels.
 
+* The cooldown are shared across collections, and the collections check the soundbank (`!sb`) cooldown as well. The `!sb` cooldown, though, currently ignores the collections' cooldowns (TODO).
+
 
 # Hotkeys
 

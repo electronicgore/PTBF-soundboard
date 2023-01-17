@@ -13,7 +13,8 @@ from twitchbot import (
     InvalidArgumentsError,
     get_currency_name,
     get_balance_from_msg,
-    subtract_balance
+    subtract_balance,
+    reset_command_last_execute
 )
 
 __all__ = ('Sound', 'get_sound')
@@ -346,6 +347,7 @@ async def cmd_get_sound(msg: Message, *args):
     snd = get_sound(msg.channel_name, args[0].lower())
     if snd is None:
         await msg.reply(f'no sound found with name "{args[0]}"')
+        reset_command_last_execute(msg.channel_name, cfg.prefix+'sb')
         return
 
     # calculate the sound price

@@ -12,6 +12,7 @@ from threading import Thread
 from twitchbot.poll import PollData
 from twitchbot import util
 from twitchbot.channel import Channel, channels
+from twitchbot.command import is_command_on_cooldown, get_time_since_execute, update_command_last_execute
 from twitchbot.command_whitelist import is_command_whitelisted, send_message_on_command_whitelist_deny
 from twitchbot.config import get_nick, get_command_prefix, get_oauth, generate_config
 from twitchbot.database import get_custom_command
@@ -43,8 +44,6 @@ from twitchbot.irc import Irc
 from twitchbot.pubsub import PubSubClient
 from twitchbot.shared import set_bot
 
-# for old cooldowns:
-from twitchbot.command import is_command_on_cooldown, get_time_since_execute, update_command_last_execute
 
 __all__ = (
     'SoundBot'
@@ -52,6 +51,16 @@ __all__ = (
 
 SB_COOLDOWN = cfg.soundbank_cooldown
 cooldowns = CooldownManager()
+
+
+
+def CooldownTag(tag: str):
+    """a decorator that adds a cmd.cooldown_tag to a command"""
+    def _add_cooldown_tag(self):
+        self.cooldown_tag=tag
+        return self
+    return _add_cooldown_tag
+
 
 class SoundBot(BaseBot):
     def __init__(self):
@@ -62,7 +71,7 @@ class SoundBot(BaseBot):
 
 
     async def _run_command(self, msg: Message, cmd: Command):
-        # mostly a copy of the default _run_command except for the cooldown handling and no event handling
+        # mostly a copy of the default _run_command except for the cooldown, exception, and (no) event handling
 
         # permissions
         # [0] is needed here because get_sub_cmd() also returns the modified args relative to the level it recursively reached
@@ -79,7 +88,7 @@ class SoundBot(BaseBot):
 
         # cooldowns
         try:
-            cooldown_key = cmd.permission_tag
+            cooldown_key = cmd.cooldown_tag
         except AttributeError:
             cooldown_key = cmd.fullname
 

@@ -16,6 +16,7 @@ from twitchbot import (
     subtract_balance,
     reset_command_last_execute
 )
+from .soundboard_bot import CooldownTag
 
 __all__ = ('Sound', 'SoundCommand', 'get_sound', 'play_sound')
 
@@ -342,7 +343,7 @@ async def cmd_upd_sound(msg: Message, *args):
     await msg.reply(f'successfully updated sound {snd.sndid}')
 
 
-@SoundCommand
+@CooldownTag(tag='Sound')
 @Command('sb', permission=SB_PERM, syntax='<sndid>', cooldown=SB_COOLDOWN, help='plays sound sndid from soundboard')
 async def cmd_get_sound(msg: Message, *args):
     # sanity checks:

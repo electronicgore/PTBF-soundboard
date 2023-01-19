@@ -9,6 +9,7 @@ from twitchbot import (
 )
 from random import choice as rndchoice
 from .soundboardt import Sound, SoundCommand, get_sound, play_sound
+from .soundboard_bot import CooldownTag
 
 
 ####################
@@ -102,7 +103,7 @@ if cfg.soundbank_use_collections:
     # I have not found a better way to do this than exec() plus a lot of jank.
     # !! Mind the indentation in the exec string !!
     for colln in collections_list:
-        exec(f"""@SoundCommand
+        exec(f"""@CooldownTag(tag='Sound')
 @Command('{colln}', permission=SBCOLL_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
 async def cmd_play_collection(msg: Message):
     await play_collection(msg, '{colln}')""")

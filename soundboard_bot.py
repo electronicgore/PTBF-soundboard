@@ -80,7 +80,7 @@ class SoundBot(BaseBot):
         # cooldowns
         try:
             cooldown_key = cmd.permission_tag
-        except NameError:
+        except AttributeError:
             cooldown_key = cmd.fullname
 
         has_cooldown_bypass_permission = (cfg.enable_cooldown_bypass_permissions and

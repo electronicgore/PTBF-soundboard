@@ -218,13 +218,13 @@ You can have different collections for different twitch channels (could be usefu
 
 
 ## Collections: NOTES
-* The collections are currently not as integrated into the bot economy as the individual sounds. You cannot set different prices for different collections. If the bot pulls a sound that does not exist, it just does nothing while taking the payment -- your viewers may feel scammed. These issues are on the TODO list with no certain due date.
+* You cannot currently set different prices for different collections.
 
-* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This distinction is arbitrary and exists mostly for historical reasons.
+* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This distinction is arbitrary, but the broad idea is that you have very few easily memorable collections, and possibly a lot of individual sounds. Having `!sb sound` instead of `!sound` allows for feedback when a sound is not found (e.g., due to a typo).
 
 * Same as you can have different sounds in different channels, you can have different collections in different channels. Collections from different channels can have the same name. There is currently no easy way to make collections (or sounds) portable across channels.
 
-* The cooldown are shared across collections, and the collections check the soundbank (`!sb`) cooldown as well. The `!sb` cooldown, though, currently ignores the collections' cooldowns (TODO).
+* The cooldowns are shared across collections and `!sb`.
 
 
 # Hotkeys

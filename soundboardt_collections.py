@@ -2,8 +2,6 @@ from twitchbot import (
     Command,
     Message,
     cfg,
-    is_command_off_cooldown,
-    get_time_since_execute,
     get_command,
     get_currency_name,
     get_balance_from_msg,
@@ -49,24 +47,6 @@ else:
 ###    Collections    ###
 #########################
 
-def is_channel_sb_off_cooldown(channel: str) -> (bool, int):
-    """Check all soundbank cooldowns, including 'sb' and all collections"""
-    checkbox = []
-    checkbox.append(is_command_off_cooldown(channel, cfg.prefix + 'sb'))
-    for colln in SBCOLLECTIONS[channel]:
-        # why this uses a prefix is beyond me...
-        checkbox.append(is_command_off_cooldown(channel, cfg.prefix + colln))
-    print(checkbox)
-
-    if any(checkbox):
-        # also return the time left on the cooldown
-        cooldowns = []
-        for colln in SBCOLLECTIONS[channel]:
-            timer = get_time_since_execute(channel, cfg.prefix + colln)
-            cooldowns.append(get_command(cfg.prefix + colln).cooldown - timer)
-
-    return [all(checkbox), max(cooldowns)]
-
 
 async def accounting_collection(msg: Message, colln: str):
     """Expropriate the points from the message author who dared to play a collection sound"""
@@ -93,13 +73,6 @@ async def play_collection(msg: Message, colln: str) -> None:
         # This can only happen in a multi-channel setup
         raise InvalidArgumentsError(reason=f'There is no collection {colln} defined for channel {channel}!',
             cmd=play_collection)
-        return
-
-    if not is_channel_sb_off_cooldown(channel)[0] and is_command_off_cooldown(channel, cfg.prefix + colln):
-        # Check if any of the other collection commands are on cooldown
-        # If the command itself is on cooldown then the standard bot response should take care of it.
-        #print(f'Soundbank is on cooldown')
-        await msg.reply(f'The soundbank is on cooldown, seconds left: {is_channel_sb_off_cooldown(channel)[1]}')
         return
 
     RNDSND = rndchoice(SBCOLLECTIONS[channel][colln])

@@ -51,6 +51,7 @@ __all__ = (
 )
 
 SB_COOLDOWN = cfg.soundbank_cooldown
+cooldowns = CooldownManager()
 
 class SoundBot(BaseBot):
     def __init__(self):
@@ -58,7 +59,6 @@ class SoundBot(BaseBot):
         self._running = False
         self.pubsub = PubSubClient()
         set_bot(self)
-        self.cooldowns = CooldownManager()
 
 
     async def _run_command(self, msg: Message, cmd: Command):
@@ -87,20 +87,20 @@ class SoundBot(BaseBot):
                                           perms.has_permission(msg.channel_name, msg.author, cmd.cooldown_bypass))
 
         if ((not has_cooldown_bypass_permission)
-                and self.cooldowns.on_cooldown(key=cooldown_key, required_min_seconds=cmd.cooldown)):
+                and cooldowns.on_cooldown(key=cooldown_key, required_min_seconds=cmd.cooldown)):
             return await msg.reply(
-                f'{cmd.fullname} is on cooldown, seconds left: {self.cooldowns.seconds_left(key=cooldown_key, required_min_seconds=cmd.cooldown):.1f}')
+                f'{cmd.fullname} is on cooldown, seconds left: {cooldowns.seconds_left(key=cooldown_key, required_min_seconds=cmd.cooldown):.1f}')
 
 
         # actual execution
         try:
             await cmd.execute(msg)
             if not has_cooldown_bypass_permission:
-                self.cooldowns.set_cooldown(key=cooldown_key)
+                cooldowns.set_cooldown(key=cooldown_key)
         except InvalidArgumentsError as e:
             await self._send_cmd_help(msg, cmd.get_sub_cmd(msg.args)[0], e)
         except ValueError as e:
             # it's probably not a great idea to make this a universal handler for all commands when I only need it for !sb...
             # just in case, printing out the error details in the console:
-            print(f'there was an error while attempting to execute the command: {e}')
+            print(f'there was an error while attempting to execute the command: {e}.')
             return

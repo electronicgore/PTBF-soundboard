@@ -353,8 +353,6 @@ async def cmd_get_sound(msg: Message, *args):
     snd = get_sound(msg.channel_name, args[0].lower())
     if snd is None:
         await msg.reply(f'no sound found with name "{args[0]}"')
-        # in case we're working in the scope of the basebot:
-        reset_command_last_execute(msg.channel_name, cfg.prefix+'sb')
         raise ValueError(args[0].lower())
         return
 

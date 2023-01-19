@@ -75,9 +75,15 @@ async def play_collection(msg: Message, colln: str) -> None:
             cmd=play_collection)
         return
 
-    RNDSND = rndchoice(SBCOLLECTIONS[channel][colln])
+    RNDSND = rndchoice(SBCOLLECTIONS[channel][colln]).lower()
     print(f'Playing random sound "{RNDSND}" from collection "{colln}" in channel "{channel}"')
     snd = get_sound(channel, RNDSND)
+    if snd is None:
+        await msg.reply(f'no sound found with name "{RNDSND}"')
+        # raising an exception on no sound found means we skip accounting and avoid starting the cooldown
+        raise ValueError(RNDSND)
+        return
+
     play_sound(snd)
     await accounting_collection(msg, colln)
 

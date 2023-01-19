@@ -17,7 +17,7 @@ from twitchbot import (
     reset_command_last_execute
 )
 
-__all__ = ('Sound', 'get_sound')
+__all__ = ('Sound', 'SoundCommand', 'get_sound', 'play_sound')
 
 
 
@@ -82,7 +82,7 @@ class Sound(Base):
 
 
 
-def soundcommand(self):
+def SoundCommand(self):
 	"""a decorator that adds a cmd.permission_tag="Sound" to a command"""
 	self.permission_tag="Sound"
 	return self
@@ -342,6 +342,7 @@ async def cmd_upd_sound(msg: Message, *args):
     await msg.reply(f'successfully updated sound {snd.sndid}')
 
 
+@SoundCommand
 @Command('sb', permission=SB_PERM, syntax='<sndid>', cooldown=SB_COOLDOWN, help='plays sound sndid from soundboard')
 async def cmd_get_sound(msg: Message, *args):
     # sanity checks:
@@ -352,7 +353,9 @@ async def cmd_get_sound(msg: Message, *args):
     snd = get_sound(msg.channel_name, args[0].lower())
     if snd is None:
         await msg.reply(f'no sound found with name "{args[0]}"')
+        # in case we're working in the scope of the basebot:
         reset_command_last_execute(msg.channel_name, cfg.prefix+'sb')
+        raise ValueError(args[0].lower())
         return
 
     # calculate the sound price

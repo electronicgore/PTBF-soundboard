@@ -5,7 +5,7 @@ import os
 import warnings
 
 from asyncio import get_event_loop
-from typing import Optional, TYPE_CHECKING
+from typing import Optional, Union, TYPE_CHECKING
 from threading import Thread
 
 """
@@ -50,6 +50,8 @@ __all__ = (
     'SoundBot'
 )
 
+SB_COOLDOWN = cfg.soundbank_cooldown
+
 class SoundBot(BaseBot):
     def __init__(self):
         self.irc = Irc()
@@ -74,20 +76,31 @@ class SoundBot(BaseBot):
                 )
             return
 
+
         # cooldowns
+        try:
+            cooldown_key = cmd.permission_tag
+        except NameError:
+            cooldown_key = cmd.fullname
+
         has_cooldown_bypass_permission = (cfg.enable_cooldown_bypass_permissions and
                                           perms.has_permission(msg.channel_name, msg.author, cmd.cooldown_bypass))
 
         if ((not has_cooldown_bypass_permission)
-                #and is_command_on_cooldown(msg.channel_name, cmd.fullname, cmd.cooldown)):
-                and is_command_on_cooldown(msg.channel_name, cmd.fullname, cmd.cooldown)):
+                and self.cooldowns.on_cooldown(key=cooldown_key, required_min_seconds=cmd.cooldown)):
             return await msg.reply(
-                f'{cmd.fullname} is on cooldown, seconds left: {cmd.cooldown - get_time_since_execute(msg.channel_name, cmd.fullname)}')
+                f'{cmd.fullname} is on cooldown, seconds left: {self.cooldowns.seconds_left(key=cooldown_key, required_min_seconds=cmd.cooldown):.1f}')
+
 
         # actual execution
         try:
             await cmd.execute(msg)
             if not has_cooldown_bypass_permission:
-                update_command_last_execute(msg.channel_name, cmd.fullname)
+                self.cooldowns.set_cooldown(key=cooldown_key)
         except InvalidArgumentsError as e:
             await self._send_cmd_help(msg, cmd.get_sub_cmd(msg.args)[0], e)
+        except ValueError as e:
+            # it's probably not a great idea to make this a universal handler for all commands when I only need it for !sb...
+            # just in case, printing out the error details in the console:
+            print(f'there was an error while attempting to execute the command: {e}')
+            return

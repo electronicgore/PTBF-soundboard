@@ -10,7 +10,7 @@ from twitchbot import (
     subtract_balance
 )
 from random import choice as rndchoice
-from soundboardt import Sound, get_sound, play_sound
+from .soundboardt import Sound, SoundCommand, get_sound, play_sound
 
 
 ####################
@@ -123,7 +123,8 @@ if cfg.soundbank_use_collections:
     # I have not found a better way to do this than exec() plus a lot of jank.
     # !! Mind the indentation in the exec string !!
     for colln in collections_list:
-        exec(f"""@Command('{colln}', permission=SBCOLL_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
+        exec(f"""@SoundCommand
+@Command('{colln}', permission=SBCOLL_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
 async def cmd_play_collection(msg: Message):
     await play_collection(msg, '{colln}')""")
 

@@ -1,8 +1,10 @@
 # PythonTwitchBotFramework Soundboard mod
 
-This is an extension for [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. See [the original readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md) and  [the original wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) for info on how to install, set up, and use the bot.
+This is an extension for [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. See [the original readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md) and  [the original wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) for more info on how to install, set up, and use the bot (but a quick guide follows).
 
-As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
+Quick notes:
+1. As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
+2. The bot forks the `BaseBot` PTBF class to better deal with cooldowns, with the fork dropping some functionality (like event handling). If you want soundboard functionality in a way compatible with `BaseBot` or your other bot class, a [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) should work for you.
 
 For any questions or feature requests, open an issue on github.
 
@@ -21,9 +23,16 @@ Get python, get PythonTwitchBotFramework, download the pyfiles from this repo an
 
 
 # Quickstart
-Create a `sounds` folder in your bot folder. Put some audio files in there, e.g. `wow.mp3`. Type `!updatesb` in chat. Now you and your viewers can play this sound using the command `!sb wow`.
+Put the repo contents into `soundbot` folder inside the PTBF folder. Create a `run_soundbot.py` in the PTBF folder with the following contents:
+```
+from soundbot import SoundBot
+if __name__ == '__main__':
+    SoundBot().run()
+```
+(or move the file from the repo to the PTBF folder).
+Then in the command prompt run `python run_soundbot.py` while in the PTBF folder.
 
-(The above and the rest of this readme assumes you use "!" as the command prefix. The soundboard can work with any other prefix that PTBF accepts)
+Create a `sounds` folder in your bot folder. Put some audio files in there, e.g. `wow.mp3`. Type `!updatesb` in chat. Now you and your viewers can play this sound using the command `!sb wow`.
 
 
 # Config options

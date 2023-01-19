@@ -82,6 +82,11 @@ class Sound(Base):
 
 
 
+def soundcommand(self):
+	"""a decorator that adds a cmd.permission_tag="Sound" to a command"""
+	self.permission_tag="Sound"
+	return self
+
 
 def add_sound(snd: Sound) -> str:
     """add a sound object to the soundbank, return a string describing the outcome"""

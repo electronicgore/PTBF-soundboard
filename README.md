@@ -48,7 +48,6 @@ The following options are relevant for the soundboard and are set in `./config/c
 
 ## Soundbank collections
 * `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections) for more details.
-* `soundbank_collections_permission` (optional): set the permission group for playing sounds from the soundbank collections. If unset, defaults to the value set in `soundbank_permission`. If that is not set either, defaults to unrestricted access.
 * `soundbank_collections_price` (optional): price for playing a sound from (any) collection. Per-collection prices are not implemented, sorry. If unset, defaults to the value set in `soundbank_default_price`. If that is not set either, defaults to `0`.
 
 ## Soundbank hotkeys
@@ -65,22 +64,20 @@ The following is an example of the part of the `<botfolder>/configs/config.json`
   "soundbank_gain": -7,
   "soundbank_cooldown": 15,
   "soundbank_collections": {
-    "<yourtwitchchannel>": {
-      "hi": [
-        "hello",
-        "hellothere",
-        "hi"
-      ],
-      "bb": [
-        "boop",
-        "honk",
-        "wenk"
-      ],
-      "f": [
-        "unacceptable",
-        "wilhelm"
-     ]
-    }
+    "hi": [
+      "hello",
+      "hellothere",
+      "hi"
+    ],
+    "bb": [
+      "boop",
+      "honk",
+      "wenk"
+    ],
+    "f": [
+      "unacceptable",
+      "wilhelm"
+   ]
   },
   "soundbank_collections_price": 10,
   "soundbank_use_hotkeys": true,

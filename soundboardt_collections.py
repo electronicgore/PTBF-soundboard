@@ -23,10 +23,7 @@ else:
     SBCOLLECTIONS = cfg.soundbank_collections
 
 
-if 'soundbank_collections_permission' not in cfg.data:
-    if 'soundbank_permission' not in cfg.data: cfg.data['soundbank_collections_permission']=''
-    else: cfg.data['soundbank_collections_permission']=cfg.soundbank_permission
-SBCOLL_PERM = cfg.data['soundbank_collections_permission']
+SB_PERM = cfg.soundbank_permission
 
 
 if 'soundbank_collections_price' not in cfg.data:
@@ -88,7 +85,7 @@ async def play_collection(msg: Message, colln: str) -> None:
 # !! Mind the indentation in the exec string !!
 for colln in SBCOLLECTIONS:
 	exec(f"""@CooldownTag(tag='Sound')
-@Command('{colln}', permission=SBCOLL_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
+@Command('{colln}', permission=SB_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
 async def cmd_play_collection(msg: Message):
     await play_collection(msg, '{colln}')""")
 

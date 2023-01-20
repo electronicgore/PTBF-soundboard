@@ -42,19 +42,16 @@ else:
 
 async def accounting_collection(msg: Message, colln: str):
     """Expropriate the points from the message author who dared to play a collection sound"""
-    currency = get_currency_name(msg.channel_name).name
 
     if SBCOLL_PRICE==0:
         # Nothing to do if things are free
         return
     else:
         if get_balance_from_msg(msg).balance < SBCOLL_PRICE:
+            currency = get_currency_name(msg.channel_name).name
             raise InvalidArgumentsError(f'{msg.author} tried to play a sound from "{colln}" '
                 f'for {SBCOLL_PRICE} {currency}, but they do not have enough {currency}!')
         subtract_balance(msg.channel_name, msg.author, SBCOLL_PRICE)
-
-    if cfg.soundbank_verbose:
-        await msg.reply(f'{msg.author} played "{snd.sndid}" for {SBCOLL_PRICE} {currency}')
 
 
 async def play_collection(msg: Message, colln: str) -> None:
@@ -78,13 +75,15 @@ async def play_collection(msg: Message, colln: str) -> None:
 
     play_sound(snd)
     await accounting_collection(msg, colln)
+    if cfg.soundbank_verbose:
+        await msg.reply(f'{msg.author} played "{snd.sndid}" for {SBCOLL_PRICE} {get_currency_name(msg.channel_name).name}')
 
 
 # now just need to create a command for every collection.
 # I have not found a better way to do this than exec() plus a lot of jank.
 # !! Mind the indentation in the exec string !!
 for colln in SBCOLLECTIONS:
-	exec(f"""@CooldownTag(tag='Sound')
+    exec(f"""@CooldownTag(tag='Sound')
 @Command('{colln}', permission=SB_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
 async def cmd_play_collection(msg: Message):
     await play_collection(msg, '{colln}')""")

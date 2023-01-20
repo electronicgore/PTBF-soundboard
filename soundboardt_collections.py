@@ -64,14 +64,14 @@ async def play_collection(msg: Message, colln: str) -> None:
     """The actual command to play a sound from the required collection in a given channel"""
     channel = msg.channel_name
 
-    if not colln in SBCOLLECTIONS[channel]:
+    if not colln in SBCOLLECTIONS:
         # This can only happen in a multi-channel setup
-        raise InvalidArgumentsError(reason=f'There is no collection {colln} defined for channel {channel}!',
+        raise InvalidArgumentsError(reason=f'Collection {colln} is not defined!',
             cmd=play_collection)
         return
 
-    RNDSND = rndchoice(SBCOLLECTIONS[channel][colln]).lower()
-    print(f'Playing random sound "{RNDSND}" from collection "{colln}" in channel "{channel}"')
+    RNDSND = rndchoice(SBCOLLECTIONS[colln]).lower()
+    print(f'Playing random sound "{RNDSND}" from collection "{colln}"')
     snd = get_sound(channel, RNDSND)
     if snd is None:
         await msg.reply(f'no sound found with name "{RNDSND}"')
@@ -83,19 +83,10 @@ async def play_collection(msg: Message, colln: str) -> None:
     await accounting_collection(msg, colln)
 
 
-# construct an inverse dictionary of of collections of the form "collection": ("channel1", "channel2", ...)
-# to know which commands to create
-collections_list = {}
-for channel in SBCOLLECTIONS:
-	for colln in SBCOLLECTIONS[channel]:
-		if not colln in collections_list:
-			collections_list[colln] = []
-		collections_list[colln].append(channel)
-
 # now just need to create a command for every collection.
 # I have not found a better way to do this than exec() plus a lot of jank.
 # !! Mind the indentation in the exec string !!
-for colln in collections_list:
+for colln in SBCOLLECTIONS:
 	exec(f"""@CooldownTag(tag='Sound')
 @Command('{colln}', permission=SBCOLL_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
 async def cmd_play_collection(msg: Message):

@@ -19,12 +19,6 @@ from .soundboard_bot import CooldownTag
 # These config sanity checks are extremely weak; it might be better to make them more strict and error messages more informative
 if 'soundbank_collections' not in cfg.data:
     SBCOLLECTIONS = {}
-    if cfg.data['soundbank_use_collections'] == True:
-        cfg.data['soundbank_use_collections'] = False;
-        print('Warning: config says to use soundboard collections, but none are defined! Cancelling!')
-    elif 'soundbank_use_collections' not in cfg.data:
-        cfg.data['soundbank_use_collections'] = False
-    cfg.save()
 else:
     SBCOLLECTIONS = cfg.soundbank_collections
 
@@ -89,21 +83,20 @@ async def play_collection(msg: Message, colln: str) -> None:
     await accounting_collection(msg, colln)
 
 
-if cfg.soundbank_use_collections:
-    # construct an inverse dictionary of of collections of the form "collection": ("channel1", "channel2", ...)
-    # to know which commands to create
-    collections_list = {}
-    for channel in SBCOLLECTIONS:
-        for colln in SBCOLLECTIONS[channel]:
-            if not colln in collections_list:
-                collections_list[colln] = []
-            collections_list[colln].append(channel)
+# construct an inverse dictionary of of collections of the form "collection": ("channel1", "channel2", ...)
+# to know which commands to create
+collections_list = {}
+for channel in SBCOLLECTIONS:
+	for colln in SBCOLLECTIONS[channel]:
+		if not colln in collections_list:
+			collections_list[colln] = []
+		collections_list[colln].append(channel)
 
-    # now just need to create a command for every collection.
-    # I have not found a better way to do this than exec() plus a lot of jank.
-    # !! Mind the indentation in the exec string !!
-    for colln in collections_list:
-        exec(f"""@CooldownTag(tag='Sound')
+# now just need to create a command for every collection.
+# I have not found a better way to do this than exec() plus a lot of jank.
+# !! Mind the indentation in the exec string !!
+for colln in collections_list:
+	exec(f"""@CooldownTag(tag='Sound')
 @Command('{colln}', permission=SBCOLL_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
 async def cmd_play_collection(msg: Message):
     await play_collection(msg, '{colln}')""")

@@ -47,7 +47,6 @@ The following options are relevant for the soundboard and are set in `./config/c
 * `soundbank_permission` (default: ``): set the permission group for playing sounds from the bank. By default everyone in chat can use the `!sb` command (see [PTBF readme](https://github.com/sharkbound/PythonTwitchBotFramework#permissions) for an explanation of permissions).
 
 ## Soundbank collections
-* `soundbank_use_collections` (default: `false`): are you using any soundboard collections? See [collections](#collections)
 * `soundbank_collections` (default: `None`): defines the soundboard collections for you to use; see [collections](#collections) for more details.
 * `soundbank_collections_permission` (optional): set the permission group for playing sounds from the soundbank collections. If unset, defaults to the value set in `soundbank_permission`. If that is not set either, defaults to unrestricted access.
 * `soundbank_collections_price` (optional): price for playing a sound from (any) collection. Per-collection prices are not implemented, sorry. If unset, defaults to the value set in `soundbank_default_price`. If that is not set either, defaults to `0`.
@@ -65,7 +64,6 @@ The following is an example of the part of the `<botfolder>/configs/config.json`
   "soundbank_verbose": false,
   "soundbank_gain": -7,
   "soundbank_cooldown": 15,
-  "soundbank_use_collections": true,
   "soundbank_collections": {
     "<yourtwitchchannel>": {
       "hi": [

@@ -441,6 +441,7 @@ async def cmd_upd_sb(msg: Message, *args):
         await msg.reply(f'soundbank updated; {num_a} sounds added')
 
 
+"""
 @Command('gensblist', permission='sound', help='output list of sounds in soundbank (with prices) to file')
 async def cmd_gen_sb_list(msg: Message):
     channel=msg.channel_name
@@ -457,6 +458,7 @@ async def cmd_gen_sb_list(msg: Message):
                 price=SB_DEFPRICE
             f.write(f'{PREFIX}sb {snd.sndid}\t\t{price} {currency}\n')
     await msg.reply(f'sound list generated')
+"""
 
 
 @Command('sbvol', permission='sound', syntax='<optional:sndid> <gain>',

@@ -84,9 +84,9 @@ class Sound(Base):
 
 
 def SoundCommand(self):
-	"""a decorator that adds a cmd.permission_tag="Sound" to a command"""
-	self.permission_tag="Sound"
-	return self
+    """a decorator that adds a cmd.permission_tag="Sound" to a command"""
+    self.permission_tag="Sound"
+    return self
 
 
 def add_sound(snd: Sound) -> str:
@@ -179,6 +179,9 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace:
     if not os.path.exists(path):
         return False
 
+    if verbose:
+        print('updating the soundbank...')
+
     # Generate the relevant list of files
     scanfiles = []
     if recursive:
@@ -220,12 +223,13 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace:
             num_r+=1
         elif sndex.filepath==snd.filepath:
             # sndid exists and is same file
-            resp = f'sound "{sndid}" already exists from {fpath}'
+            #resp = f'sound "{sndid}" already exists from {fpath}'
+            resp = ''
         else:
             # sndid exists but points to a different file
             resp = f'failed to add sound "{sndid}" from {fpath}: sndid already taken by {sndex.filepath}'
 
-        if verbose:
+        if verbose and resp:
             print(resp)
 
     session.commit()

@@ -114,11 +114,12 @@ The command takes the following options:
 
 The options can be combined in arbitrary order: e.g., `!updatesb rcs` cleans the database, then scans `soundbank_path` and all nested folders, and strips prefixes when generating sound names.
 
-To summarize, there are three ways to organize your sound collection: using whitespaces in filenames, using prefixes with underscores in filenames (with `s` option), and using subfolders (with `r` option).
+To summarize, there are three ways to organize your sound collection that you can mix and match to your liking: 
+1. using whitespaces in filenames: `soundname comment.mp3`;
+2. using prefixes with underscores in filenames (with `s` option): `comment_soundname.mp3`;
+3. using subfolders (with `r` option): `comment/soundname.mp3`.
 
-Note that many features above can create conflicts. E.g., if you have sounds named `wow.mp3` and `wow 2.mp3`, both of them will try to claim name `wow`. This is not allowed, and running `!updatesb` will lead to you having only one of the two in the database (and you can't be sure which one). If you want one command to pull a random sound from a pool of sounds, see [collections](#collections).
-
-Another note: the sound database is per-channel. I.e., if you set up the bot to join `channel1` and `channel2` and add some sounds from `channel1` chat, they would not be available to use in `channel2` unless you add them from `channel2` chat as well!
+Note that these features can create conflicts. E.g., if you have sounds named `wow.mp3` and `wow 2.mp3`, both of them will try to claim sndid `wow`. This is not allowed, and running `!updatesb` will lead to you having only one of the two in the database (and you can't be sure which one). If you want a single command to pull a random sound from a pool of sounds, see [collections](#collections).
 
 
 ## Adding sounds: manual

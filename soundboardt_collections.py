@@ -8,7 +8,7 @@ from twitchbot import (
     subtract_balance
 )
 from random import choice as rndchoice
-from .soundboardt import Sound, SoundCommand, get_sound, play_sound
+from .soundboardt import Sound, SoundCommand, get_sound, play_sound, _create_colln
 from .soundboard_bot import CooldownTag
 
 
@@ -21,6 +21,12 @@ if 'soundbank_collections' not in cfg.data:
     SBCOLLECTIONS = {}
 else:
     SBCOLLECTIONS = cfg.soundbank_collections
+
+    #The following check is a reverse migration from v0.3, which allowed channel-dependent collections
+    for colln_name,colln_list in SBCOLLECTIONS.items():
+        if not isinstance(colln_list[0], str):
+            raise ValueError('Something is wrong with the collections config. Note that channel-dependent collections are no longer accepted!')
+
 
 
 SB_PERM = cfg.soundbank_permission
@@ -79,12 +85,6 @@ async def play_collection(msg: Message, colln: str) -> None:
         await msg.reply(f'{msg.author} played "{snd.sndid}" for {SBCOLL_PRICE} {get_currency_name(msg.channel_name).name}')
 
 
-# now just need to create a command for every collection.
-# I have not found a better way to do this than exec() plus a lot of jank.
-# !! Mind the indentation in the exec string !!
+# now just need to create a command for every collection
 for colln in SBCOLLECTIONS:
-    exec(f"""@CooldownTag(tag='Sound')
-@Command('{colln}', permission=SB_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
-async def cmd_play_collection(msg: Message):
-    await play_collection(msg, '{colln}')""")
-
+    _create_colln(colln)

@@ -108,6 +108,7 @@ The command takes the following options:
 
 * `c` -- *clean*, runs !cleansb (removes the sounds with the missing names) before scanning the folder for new sounds
 * `f` -- *force*, to force-replace any existing sounds in the bank with new ones in case of conflicting sound names (otherwise conflicts are skipped).
+* `g` -- *generate collections* (implies `r`), to automatically create sound [collections](#collections) from filesystem. **This is a destructive operation**, any collections manually specified in the config will be overwritten! See [collections](#collections) section for more info on this option.
 * `r` -- *recursive*, to look for audio files in nested folders as well, and not only in `soundbank_path`;
 * `s` -- *strip prefix*, to strip everything until the first underscore when converting filename to sound name. E.g., `owen_wow.mp3` would be named `wow` by `!updatesb s`.
 * `q` -- *quiet*, to suppress detailed reporting in the bot output (does not affect the report posted in chat).
@@ -174,13 +175,15 @@ To delete a sound named `sndid`, use `!delsound sndid`.
 # Collections
 Instead of playing a *certain* sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
 
-To implement the idea described above (assuming you already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`, replacing `<yourtwitchchannel>` with your channel name):
+## Automatic generation
+In your `<sounds>` folder (`<botfolder>/sounds` by default), create a folder named like the collection you want to create; `whoa` in our example. Put the desired sounds inside this folder (`whoa/wow.mp3` and `whoa/ohmy.ogg`). Run `!updatesb g` from chat (can be combined with other `updatesb` options). This creates a collection (`!whoa`) that plays a random sound from the folder. This also adds the individual sounds from the folder to the soundbank, so `!sb wow` and `!sb ohmy` can then be used to play individual sounds.
+
+## Manual config
+You can also implement the idea described in the intro (collection `whoa` that randomizes between sounds `wow.mp3` and `ohmy.ogg`) by editing the config file manually. This assumes you have already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`):
 ```json
 "soundbank_use_collections": true,
 "soundbank_collections": {
-  "<yourtwitchchannel>": {
-    "whoa": ["wow", "ohmy"]
-  }
+  "whoa": ["wow", "ohmy"]
 }
 ```
 
@@ -197,20 +200,7 @@ You can, of course, define multiple collections in the config file, separated by
 }
 ```
 
-You can have different collections for different twitch channels (could be useful if you stream to different channels from the same PC):
-```json
-"soundbank_use_collections": true,
-"soundbank_collections": {
-  "<yourtwitchchannel>": {
-    "whoa": ["wow", "ohmy"]
-  },
-  "<anotherchannel>":{
-    "whoa": ["wilhelmscream", "overconfidence"]
-  }
-}
-```
-
-(Reminder: ensure that all the sounds that you include as parts of collections are actually added to the database, in respective channels. The collection validity is not verified. )
+(Ensure that all the sounds that you include as parts of collections are actually added to the database. The collection validity is not verified.)
 
 
 ## Collections: NOTES

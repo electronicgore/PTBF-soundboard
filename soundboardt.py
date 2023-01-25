@@ -4,6 +4,7 @@ from typing import Optional
 from pydub import AudioSegment as pd_audio
 from pydub.playback import play as pd_play
 from pydub.utils import mediainfo as pd_mediainfo
+from random import choice as rndchoice
 from twitchbot import (
     Command,
     Message,
@@ -18,7 +19,7 @@ from twitchbot import (
 )
 from .soundboard_bot import CooldownTag
 
-__all__ = ('Sound', 'SoundCommand', 'get_sound', 'play_sound')
+__all__ = ('Sound', 'SoundCommand', 'get_sound', 'play_sound', '_create_colln')
 
 
 
@@ -44,7 +45,21 @@ else:
     else:
         cfg.data['soundbank_gain']={}
 
+
+# Collections
+if 'soundbank_collections' not in cfg.data:
+    cfg.data['soundbank_collections'] = {}
+
+if 'soundbank_collections_price' not in cfg.data:
+    if 'soundbank_default_price' in cfg.data:
+        SBCOLL_PRICE = cfg.soundbank_default_price
+    else:
+        SBCOLL_PRICE = 0
+else:
+    SBCOLL_PRICE = cfg.soundbank_collections_price
+
 cfg.save()
+
 
 PREFIX = cfg.prefix
 SB_COOLDOWN = cfg.soundbank_cooldown
@@ -52,7 +67,6 @@ SB_PATH = cfg.soundbank_path
 SB_DEFPRICE = cfg.soundbank_default_price
 SB_PERM = cfg.soundbank_permission
 SB_GAIN = cfg.soundbank_gain
-
 
 
 
@@ -173,42 +187,64 @@ def _filename_strip(filename: str, strip_prefix: bool = False) -> str:
     return filename[prefixpos+1:suffixpos]
 
 
-def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace: bool = False,
-            strip_prefix: bool = False, verbose: bool = True):
+# A supplementary command to create a command for every collection.
+# I have not found a better way to do this than exec() plus a lot of jank.
+# (this is not in the collections file due to it being used in updatesb, and a circular import happens otherwise)
+# !! Mind the indentation in the exec string !!
+def _create_colln(colln):
+    exec(f"""@CooldownTag(tag='Sound')
+@Command('{colln}', permission=SB_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
+async def cmd_play_collection(msg: Message):
+    await play_collection(msg, '{colln}')""")
+
+
+def populate_sb(channel: str, path: str = '.', recursive: bool = False, gen_collections: bool = False,
+            replace: bool = False, strip_prefix: bool = False, verbose: bool = True):
     """auto-fill the soundbank (for given channel) from files in the specified folder"""
     if not os.path.exists(path):
+        raise ValueError('updatesb is unable to find the folder it was asked to scan')
         return False
 
     if verbose:
         print('updating the soundbank...')
 
-    # Generate the relevant list of files
+    # Generate the relevant list of files and collections inferred from disk scan
     scanfiles = []
-    if recursive:
-        for root, subdirs, files in os.walk(path):
-            for file in files:
-                scanfiles.append([root, file])
-    else:
-        for file in os.listdir(path):
-            if os.path.isdir(file):
+    scan_collns = {}
+
+    for item in os.scandir(path):
+        # item can be a file, a folder, a symlink, a mountpoint...
+        if item.is_file():
+            fpath = item.path
+            fname = item.name
+
+            # Check if pydub can recognize these files. If yes, add it to the lists.
+            if not pd_mediainfo(fpath):
                 continue
-            scanfiles.append([path, file])
+
+            sndid = _filename_strip(fname, strip_prefix=strip_prefix).lower()
+            scanfiles.append([sndid, fpath])
+
+        elif item.is_dir() and (recursive or gen_collections):
+            scan_collns[item.name]=[]
+            for root, subdirs, files in os.walk(item.path):
+                for fname in files:
+                    fpath = os.path.join(root, fname)
+
+                    # Check if pydub can recognize these files. If yes, add it to the lists.
+                    if not pd_mediainfo(fpath):
+                        continue
+
+                    sndid = _filename_strip(fname, strip_prefix=strip_prefix).lower()
+                    scanfiles.append([sndid, fpath])
+                    scan_collns[item.name].append(sndid)
+
 
     # Attempt to import files into database
     num_a=0
     num_r=0
-    for froot,fname in scanfiles:
-        # Generate full file path
-        fpath = os.path.join(froot, fname)
-
-        # Check if pydub can recognize these files
-        if not pd_mediainfo(fpath):
-            continue
-
-        sndid = _filename_strip(fname, strip_prefix).lower()
+    for sndid,fpath in scanfiles:
         snd = Sound.create(channel=channel, sndid=sndid, filepath=fpath)
-
-        # Try to add the file
         sndex = get_sound(channel=channel, sndid=sndid)
         if not sndex:
             # no conflicts, add sound
@@ -221,21 +257,38 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, replace:
             session.add(snd)
             resp = f'replaced sound "{sndid}" from {fpath}'
             num_r+=1
-        elif sndex.filepath==snd.filepath:
-            # sndid exists and is same file
-            #resp = f'sound "{sndid}" already exists from {fpath}'
-            resp = ''
-        else:
+        elif sndex.filepath != snd.filepath:
             # sndid exists but points to a different file
             resp = f'failed to add sound "{sndid}" from {fpath}: sndid already taken by {sndex.filepath}'
+        else:
+            # sndid exists and points to the same file
+            #resp = f'sound "{sndid}" already exists from {fpath}'
+            continue
 
         if verbose and resp:
             print(resp)
 
+    # Now update (overwrite) the collections, if requested
+    if gen_collections:
+        #cfg.soundbank_collections = scan_collns
+        cfg.data['soundbank_collections'] = scan_collns
+        cfg.save()
+        for colln,sndlist in scan_collns.items():
+            _create_colln(colln)
+
+        if verbose:
+            resp = 'the following collections have been generated: '
+            for key,value in scan_collns.items():
+                resp += f'"{key}", '
+            resp = resp[:-2] + '.'
+            print(resp)
+
+    # Dump the changes to the database
     session.commit()
     if verbose:
         print('changes to db successfully committed')
     return num_a,num_r
+
 
 
 
@@ -419,14 +472,15 @@ async def cmd_clean_sb(msg: Message, *args):
     await msg.reply(f'{num} sounds with missing files were deleted')
 
 
-@Command('updatesb', permission='sound', syntax='[c]lean [r]ecursive [s]trip [f]orce [q]uiet',
-    help='auto-imports sounds from the filesystem')
+@Command('updatesb', permission='sound', syntax='[c]lean [g]enerate_collections [r]ecursive [s]trip [f]orce [q]uiet',
+    help='auto-imports sounds from the predefined folder')
 async def cmd_upd_sb(msg: Message, *args):
-    optionals = ' '.join(args)
+    optionals = ''.join(args)
     cln = True if ('c' in optionals) else False
+    gencollns = True if ('g' in optionals) else False   # implies rec
     rec = True if ('r' in optionals) else False
     strip = True if ('s' in optionals) else False
-    replace = True if ('f' in optionals) else False
+    force = True if ('f' in optionals) else False
     quiet = True if ('q' in optionals) else False
 
     if cln:
@@ -434,8 +488,8 @@ async def cmd_upd_sb(msg: Message, *args):
         await msg.reply(f'{num} sounds with missing files were deleted')
 
     num_a,num_r = populate_sb(channel=msg.channel_name, path=SB_PATH, recursive=rec,
-            replace=replace, strip_prefix=strip, verbose=not quiet)
-    if replace:
+            gen_collections=gencollns, replace=force, strip_prefix=strip, verbose=not quiet)
+    if force:
         await msg.reply(f'soundbank updated; {num_a} sounds added, {num_r} sounds replaced')
     else:
         await msg.reply(f'soundbank updated; {num_a} sounds added')
@@ -505,3 +559,55 @@ async def cmd_sbvol(msg: Message, *args):
         cfg.save()
         await msg.reply(f'soundbank volume gain for current channel changed by {delta}; current gain: {SB_GAIN[msg.channel_name]}')
         return
+
+
+
+
+#########################
+###    Collections    ###
+#########################
+
+
+async def accounting_collection(msg: Message, colln: str):
+    """Expropriate the points from the message author who dared to play a collection sound"""
+
+    if SBCOLL_PRICE==0:
+        # Nothing to do if things are free
+        return
+    else:
+        if get_balance_from_msg(msg).balance < SBCOLL_PRICE:
+            currency = get_currency_name(msg.channel_name).name
+            raise InvalidArgumentsError(f'{msg.author} tried to play a sound from "{colln}" '
+                f'for {SBCOLL_PRICE} {currency}, but they do not have enough {currency}!')
+        subtract_balance(msg.channel_name, msg.author, SBCOLL_PRICE)
+
+
+async def play_collection(msg: Message, colln: str) -> None:
+    """The actual command to play a sound from the required collection in a given channel"""
+    channel = msg.channel_name
+    collns = cfg.soundbank_collections
+
+    if not colln in collns:
+        # This can only happen in a multi-channel setup
+        raise InvalidArgumentsError(reason=f'Collection {colln} is not defined!',
+            cmd=play_collection)
+        return
+
+    RNDSND = rndchoice(collns[colln]).lower()
+    print(f'Playing random sound "{RNDSND}" from collection "{colln}"')
+    snd = get_sound(channel, RNDSND)
+    if snd is None:
+        await msg.reply(f'no sound found with name "{RNDSND}"')
+        # raising an exception on no sound found means we skip accounting and avoid starting the cooldown
+        raise ValueError(RNDSND)
+        return
+
+    play_sound(snd)
+    await accounting_collection(msg, colln)
+    if cfg.soundbank_verbose:
+        await msg.reply(f'{msg.author} played "{snd.sndid}" for {SBCOLL_PRICE} {get_currency_name(msg.channel_name).name}')
+
+
+# create a command for every collection (on initialization)
+for colln in cfg.soundbank_collections:
+    _create_colln(colln)

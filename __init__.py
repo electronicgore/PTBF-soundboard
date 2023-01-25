@@ -9,6 +9,6 @@ def _set_bot_package_path(path: str):
 _set_bot_package_path(__path__[0])
 """
 from .soundboardt import *
-from .soundboardt_collections import *
+#from .soundboardt_collections import *
 from .soundboard_bot import SoundBot
 

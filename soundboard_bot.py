@@ -8,30 +8,6 @@ from asyncio import get_event_loop
 from typing import Optional, Union, TYPE_CHECKING
 from threading import Thread
 
-"""
-from twitchbot.poll import PollData
-from twitchbot import util
-from twitchbot.channel import Channel, channels
-from twitchbot.command import is_command_on_cooldown, get_time_since_execute, update_command_last_execute
-from twitchbot.command_whitelist import is_command_whitelisted, send_message_on_command_whitelist_deny
-from twitchbot.config import get_nick, get_command_prefix, get_oauth, generate_config
-from twitchbot.database import get_custom_command
-from twitchbot.disabled_commands import is_command_disabled
-from twitchbot.enums import Event
-from twitchbot.enums import MessageType, CommandContext
-from twitchbot.events import trigger_event
-from twitchbot.exceptions import InvalidArgumentsError, BotNotRunningError
-from twitchbot.message import Message
-from twitchbot.modloader import Mod
-from twitchbot.modloader import mods
-from twitchbot.modloader import trigger_mod_event
-from twitchbot.util import stop_all_tasks
-from twitchbot.poll import poll_event_processor_loop
-from twitchbot.event_util import forward_event_with_results, forward_event
-from twitchbot.extra_configs import logging_config
-from twitchbot.util import get_oauth_token_info, _check_token
-from twitchbot.translations import translate
-"""
 if TYPE_CHECKING:
     from .pubsub import PubSubData, PubSubPointRedemption, PubSubBits, PubSubModerationAction, PubSubSubscription, PubSubPollData, PubSubFollow
 

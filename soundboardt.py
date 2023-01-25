@@ -198,6 +198,7 @@ async def cmd_play_collection(msg: Message):
     await play_collection(msg, '{colln}')""")
 
 
+
 def populate_sb(channel: str, path: str = '.', recursive: bool = False, gen_collections: bool = False,
             replace: bool = False, strip_prefix: bool = False, verbose: bool = True):
     """auto-fill the soundbank (for given channel) from files in the specified folder"""
@@ -268,13 +269,14 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, gen_coll
         if verbose and resp:
             print(resp)
 
+
     # Now update (overwrite) the collections, if requested
     if gen_collections:
-        #cfg.soundbank_collections = scan_collns
-        cfg.data['soundbank_collections'] = scan_collns
-        cfg.save()
         for colln,sndlist in scan_collns.items():
+            # any existing collections are overwritten if their names coincide with parsed collections
+            cfg.data['soundbank_collections'][colln] = scan_collns[colln]
             _create_colln(colln)
+        cfg.save()
 
         if verbose:
             resp = 'the following collections have been generated: '

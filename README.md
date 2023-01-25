@@ -178,6 +178,8 @@ Instead of playing a *certain* sound after some command, you might want to rando
 ## Automatic generation
 In your `<sounds>` folder (`<botfolder>/sounds` by default), create a folder named like the collection you want to create; `whoa` in our example. Put the desired sounds inside this folder (`whoa/wow.mp3` and `whoa/ohmy.ogg`). Run `!updatesb g` from chat (can be combined with other `updatesb` options). This creates a collection (`!whoa`) that plays a random sound from the folder. This also adds the individual sounds from the folder to the soundbank, so `!sb wow` and `!sb ohmy` can then be used to play individual sounds.
 
+**NOTE:** `!updatesb g` is a destructive operation and will overwrite any collections defined in the config if their names coincide with the parsed folder names.
+
 ## Manual config
 You can also implement the idea described in the intro (collection `whoa` that randomizes between sounds `wow.mp3` and `ohmy.ogg`) by editing the config file manually. This assumes you have already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`):
 ```json

@@ -30,20 +30,19 @@ __all__ = ('Sound', 'SoundCommand', 'get_sound', 'play_sound', '_create_colln')
 if 'soundbank_path' not in cfg.data: cfg.data['soundbank_path']='./sounds'
 if 'soundbank_default_price' not in cfg.data: cfg.data['soundbank_default_price']=0
 if 'soundbank_verbose' not in cfg.data: cfg.data['soundbank_verbose']=True
-#if 'soundbank_gain' not in cfg.data: cfg.data['soundbank_gain']=0
 if 'soundbank_cooldown' not in cfg.data: cfg.data['soundbank_cooldown']=15
 if 'soundbank_permission' not in cfg.data: cfg.data['soundbank_permission']=''
 
 if 'soundbank_gain' not in cfg.data:
     cfg.data['soundbank_gain']={}
 else:
-    # This next check is needed for migration from an earlier version of the config
     try:
-        float(cfg.soundbank_gain)
+        # If just a number is specified, it is converted to a dictionary with channel-specific values
+        g = float(cfg.soundbank_gain)
+        for channel in cfg.channels:
+            cfg.data['soundbank_gain'][channel]=g
     except:
         pass
-    else:
-        cfg.data['soundbank_gain']={}
 
 
 # Collections
@@ -57,6 +56,7 @@ if 'soundbank_collections_price' not in cfg.data:
         SBCOLL_PRICE = 0
 else:
     SBCOLL_PRICE = cfg.soundbank_collections_price
+
 
 cfg.save()
 

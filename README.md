@@ -5,6 +5,7 @@ This is an extension for [PythonTwitchBotFramework](https://github.com/sharkboun
 Quick notes:
 1. As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
 2. The bot forks the `BaseBot` PTBF class to better deal with cooldowns, with the fork dropping some functionality (like event handling). If you want soundboard functionality in a way compatible with `BaseBot` or your other bot class, older [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot should work for you.
+3. All sounds and collections are defined globally, for all channels defined in the config. If you want channel-specific sounds, older [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot should work for you.
 
 For any questions or feature requests, open an issue on github.
 
@@ -40,7 +41,7 @@ The following options are relevant for the soundboard and are set in `./config/c
 * `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
 * `soundbank_default_price` (default: `0`): default price of playing a sound, in terms of bot currency. Set to `0` if you do not want to use the bot economy for sounds. Note: this default is applied when *adding* sounds, changing it does not retroactively change the price of previously added sounds.
 * `soundbank_verbose` (default: `true`): whether the bot will respond with messages a lá `username played "sound" for 50 points`. Set to `False` if you do not want these messages and/or if you do not want to use the bot economy.
-* `soundbank_gain` (default: `0`): global volume level modifier for all sounds, in dB.
+* `soundbank_gain` (default: `None`): global volume level modifier for all sounds, in dB. This config option is channel-specific, but you are free to specify a number. The [`!sbvol`](## Adjusting the volume) command can adjust this option during runtime.
 * `soundbank_cooldown` (default: `15`): cooldown for playing sounds (in seconds). 
 * `soundbank_permission` (default: ``): set the permission group for playing sounds from the bank. By default everyone in chat can use the `!sb` command (see [PTBF readme](https://github.com/sharkbound/PythonTwitchBotFramework#permissions) for an explanation of permissions).
 
@@ -98,12 +99,11 @@ The `!updatesb` command runs the automatic scraper. It scans the *soundbank fold
 
 E.g., with default config, file `<botfolder>/sounds/wow.mp3` will be named `wow` and can be then played with `!sb wow`. 
 
-Important notes on scraping:
+**Notes:**
 * File extension (everything after the last dot) is automatically stripped (`wow.mp3` -> `!sb wow`). 
 * If filename has spaces, then only the first word is taken as sound name (`wow what.mp3` -> `wow`).
 
-The command takes the following options:
-
+**Options:**
 * `c` -- *clean*, runs !cleansb (removes the sounds with the missing names) before scanning the folder for new sounds
 * `f` -- *force*, to force-replace any existing sounds in the bank with new ones in case of conflicting sound names (otherwise conflicts are skipped).
 * `r` -- *recursive*, to look for audio files in nested folders as well, and not only in `soundbank_path`;

@@ -79,7 +79,6 @@ class Sound(Base):
     __tablename__ = 'sounds'
 
     id = Column(Integer, primary_key=True, nullable=False)
-    channel = Column(String(255), nullable=False)
     sndid = Column(String(255), nullable=False)
     filepath = Column(String(255), nullable=False)
     price = Column(Integer)
@@ -87,12 +86,12 @@ class Sound(Base):
     gain = Column(Float)
 
     @classmethod
-    def create(cls, channel: str, sndid: str, filepath: str, **kwargs):
+    def create(cls, sndid: str, filepath: str, **kwargs):
         optargs = {}
         for key in ['price','pricemult','gain']:
             if key in kwargs:
                 optargs[key] = kwargs[key]
-        return Sound(channel=channel.lower(), sndid=sndid.lower(),
+        return Sound(sndid=sndid.lower(),
             filepath=filepath, **optargs)
 
 
@@ -107,23 +106,23 @@ def add_sound(snd: Sound) -> str:
     """add a sound object to the soundbank, return a string describing the outcome"""
     assert isinstance(snd, Sound), 'sound must be of type Sound'
 
-    if sound_exist(snd.channel, snd.sndid, snd.filepath):
+    if sound_exist(snd.sndid, snd.filepath):
         resp = f'failed to add sound: sound "{sndid}" already exists in soundbank'
         return resp
 
     if pd_mediainfo(snd.filepath):
         session.add(snd)
         session.commit()
-        resp = f'successfully added sound "{sndid}" to soundboard'
+        resp = f'successfully added sound "{sndid}" to the soundbank'
     else:
         resp = f'failed to add sound: file not found or not recognized'
     return resp
 
 
-def get_sound(channel: str, sndid: str) -> Optional[Sound]:
+def get_sound(sndid: str) -> Optional[Sound]:
     """return a Sound object from the soundback given sndid"""
     assert isinstance(sndid, str), 'sound sndid must be of type str'
-    return session.query(Sound).filter(Sound.channel == channel, Sound.sndid == sndid).one_or_none()
+    return session.query(Sound).filter(Sound.sndid == sndid).one_or_none()
 
 
 def play_sound(snd: Sound, gain: float = 0):
@@ -134,23 +133,23 @@ def play_sound(snd: Sound, gain: float = 0):
     pd_play(sound)
 
 
-def delete_sound(channel: str, sndid: str) -> None:
+def delete_sound(sndid: str) -> None:
     """delete a sound by sndid"""
     assert isinstance(sndid, str), 'sound sndid must be of type str'
-    session.query(Sound).filter(Sound.channel == channel, Sound.sndid == sndid).delete()
+    session.query(Sound).filter(Sound.sndid == sndid).delete()
     session.commit()
 
 
-def purge_sb(channel: str) -> None:
+def purge_sb() -> None:
     """delete all entries from soundbank"""
-    session.query(Sound).filter(Sound.channel == channel).delete()
+    session.query(Sound).delete()
     session.commit()
 
 
-def clean_sb(channel: str, verbose: bool = True) -> int:
+def clean_sb(verbose: bool = True) -> int:
     """remove unused files and add new files to soundbank"""
     num=0
-    for snd in session.query(Sound).filter(Sound.channel == channel).all():
+    for snd in session.query(Sound).all():
         if not os.path.exists(snd.filepath):
             session.delete(snd)
             num+=1
@@ -189,7 +188,6 @@ def _filename_strip(filename: str, strip_prefix: bool = False) -> str:
 
 # A supplementary command to create a command for every collection.
 # I have not found a better way to do this than exec() plus a lot of jank.
-# (this is not in the collections file due to it being used in updatesb, and a circular import happens otherwise)
 # !! Mind the indentation in the exec string !!
 def _create_colln(colln):
     exec(f"""@CooldownTag(tag='Sound')
@@ -199,7 +197,7 @@ async def cmd_play_collection(msg: Message):
 
 
 
-def populate_sb(channel: str, path: str = '.', recursive: bool = False, gen_collections: bool = False,
+def populate_sb(path: str = './sounds', recursive: bool = False, gen_collections: bool = False,
             replace: bool = False, strip_prefix: bool = False, verbose: bool = True):
     """auto-fill the soundbank (for given channel) from files in the specified folder"""
     if not os.path.exists(path):
@@ -245,8 +243,8 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, gen_coll
     num_a=0
     num_r=0
     for sndid,fpath in scanfiles:
-        snd = Sound.create(channel=channel, sndid=sndid, filepath=fpath)
-        sndex = get_sound(channel=channel, sndid=sndid)
+        snd = Sound.create(sndid=sndid, filepath=fpath)
+        sndex = get_sound(sndid=sndid)
         if not sndex:
             # no conflicts, add sound
             session.add(snd)
@@ -254,7 +252,7 @@ def populate_sb(channel: str, path: str = '.', recursive: bool = False, gen_coll
             num_a+=1
         elif replace:
             # sndid exists and is overwritten
-            session.query(Sound).filter(Sound.channel == channel, Sound.sndid == sndid).delete()
+            session.query(Sound).filter(Sound.sndid == sndid).delete()
             session.add(snd)
             resp = f'replaced sound "{sndid}" from {fpath}'
             num_r+=1
@@ -343,7 +341,7 @@ async def cmd_add_sound(msg: Message, *args):
                 reason='invalid gain for gain=, must be a FLOAT, e.g., -1.4',
                     cmd=cmd_add_sound)
 
-    snd = Sound.create(channel=msg.channel_name, sndid=sndid, filepath=filepath, **optargs)
+    snd = Sound.create(sndid=sndid, filepath=filepath, **optargs)
     resp = add_sound(snd)
     await msg.reply(resp)
 
@@ -352,7 +350,7 @@ async def cmd_add_sound(msg: Message, *args):
     help='updates sound details in the soundboard')
 async def cmd_upd_sound(msg: Message, *args):
     # this largely follows the same steps as addsound
-    snd = get_sound(msg.channel_name, args[0])
+    snd = get_sound(args[0].lower())
     if snd is None:
         raise InvalidArgumentsError(reason='no sound found with this name', cmd=cmd_upd_sound)
 
@@ -410,9 +408,9 @@ async def cmd_get_sound(msg: Message, *args):
         await msg.reply(f'You can play sounds from the soundboard with "!sb <sndname>".')
         return
 
-    snd = get_sound(msg.channel_name, args[0].lower())
+    snd = get_sound(args[0].lower())
     if snd is None:
-        await msg.reply(f'no sound found with name "{args[0]}"')
+        await msg.reply(f'no sound found with name "{args[0].lower()}"')
         raise ValueError(args[0].lower())
         return
 
@@ -449,28 +447,27 @@ async def cmd_del_sound(msg: Message, *args):
     if not args:
         raise InvalidArgumentsError(reason='missing required argument', cmd=cmd_del_sound)
 
-    snd = get_sound(msg.channel_name, args[0])
+    snd = get_sound(args[0].lower())
     if snd is None:
-        raise InvalidArgumentsError(reason='no such sound found', cmd=cmd_del_sound)
+        raise InvalidArgumentsError(reason=f'no sound found with name "{args[0].lower()}"', cmd=cmd_del_sound)
 
-    delete_sound(msg.channel_name, snd.sndid)
+    delete_sound(snd.sndid)
     await msg.reply(f'successfully deleted sound "{snd.sndid}"')
 
 
 @Command('purgesb', permission='sound', help='deletes all sounds from the soundbank')
 async def cmd_purge_sb(msg: Message):
-    purge_sb(channel=msg.channel_name)
+    purge_sb()
     await msg.reply(f'soundbank purged')
 
 
 @Command('cleansb', permission='sound', syntax='[q]uiet', help='clears all sounds with missing files from the soundbank')
 async def cmd_clean_sb(msg: Message, *args):
-    # this 'if' is bold, but it should work?
     if 'q' in args:
         verbose=False
     else:
         verbose=True
-    num = clean_sb(channel=msg.channel_name, verbose=verbose)
+    num = clean_sb(verbose=verbose)
     await msg.reply(f'{num} sounds with missing files were deleted')
 
 
@@ -486,10 +483,10 @@ async def cmd_upd_sb(msg: Message, *args):
     quiet = True if ('q' in optionals) else False
 
     if cln:
-        num = clean_sb(channel=msg.channel_name, verbose=not quiet)
+        num = clean_sb(verbose=not quiet)
         await msg.reply(f'{num} sounds with missing files were deleted')
 
-    num_a,num_r = populate_sb(channel=msg.channel_name, path=SB_PATH, recursive=rec,
+    num_a,num_r = populate_sb(path=SB_PATH, recursive=rec,
             gen_collections=gencollns, replace=force, strip_prefix=strip, verbose=not quiet)
     if force:
         await msg.reply(f'soundbank updated; {num_a} sounds added, {num_r} sounds replaced')
@@ -586,18 +583,17 @@ async def accounting_collection(msg: Message, colln: str):
 
 async def play_collection(msg: Message, colln: str) -> None:
     """The actual command to play a sound from the required collection in a given channel"""
-    channel = msg.channel_name
     collns = cfg.soundbank_collections
 
     if not colln in collns:
-        # This can only happen in a multi-channel setup
+        # A situation in which a command exists for a nonexisting collection should not arise, but this is useful for debug
         raise InvalidArgumentsError(reason=f'Collection {colln} is not defined!',
             cmd=play_collection)
         return
 
     RNDSND = rndchoice(collns[colln]).lower()
     print(f'Playing random sound "{RNDSND}" from collection "{colln}"')
-    snd = get_sound(channel, RNDSND)
+    snd = get_sound(RNDSND)
     if snd is None:
         await msg.reply(f'no sound found with name "{RNDSND}"')
         # raising an exception on no sound found means we skip accounting and avoid starting the cooldown

@@ -5,7 +5,6 @@ This is an extension for [PythonTwitchBotFramework](https://github.com/sharkboun
 Quick notes:
 1. As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
 2. The bot forks the `BaseBot` PTBF class to better deal with cooldowns, with the fork dropping some functionality (like event handling). If you want soundboard functionality in a way compatible with `BaseBot` or your other bot class, older [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot should work for you.
-3. All sounds and collections are defined globally, for all channels defined in the config. If you want channel-specific sounds, older [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot should work for you.
 
 For any questions or feature requests, open an issue on github.
 
@@ -102,6 +101,7 @@ E.g., with default config, file `<botfolder>/sounds/wow.mp3` will be named `wow`
 **Notes:**
 * File extension (everything after the last dot) is automatically stripped (`wow.mp3` -> `!sb wow`). 
 * If filename has spaces, then only the first word is taken as sound name (`wow what.mp3` -> `wow`).
+* Sounds are defined on a per-channel basis. So if your bot joins `channel1` and `channel2`, and if you add sounds in `channel1` chat, they will not play when invoked from `channel2` chat.
 
 **Options:**
 * `c` -- *clean*, runs !cleansb (removes the sounds with the missing names) before scanning the folder for new sounds
@@ -178,9 +178,10 @@ Instead of playing a *certain* sound after some command, you might want to rando
 ## Automatic generation
 In your `<sounds>` folder (`<botfolder>/sounds` by default), create a folder named after the collection you want to create; `whoa` in our example. Put the desired sounds inside this folder (`whoa/wow.mp3` and `whoa/ohmy.ogg`). Run `!updatesb g` from chat (can be combined with other `updatesb` options). This creates a collection (`!whoa`) that plays a random sound from the folder. This also adds the individual sounds from the folder to the soundbank, so `!sb wow` and `!sb ohmy` can then be used to play individual sounds.
 
-*Notes:*
+**Notes:**
 * `!updatesb g` is a destructive operation and will overwrite any collections defined in the config if their names coincide with the parsed folder names.
 * Collections are only generated for first-level folders in `<sounds`, but not the nested folders.
+* Unlike individual sounds, the collections are global (universal across channels), for reasons more historical than technical. [Version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot made collections channel-specific, same as sounds.
 
 ## Manual config
 You can also implement the idea described in the intro (collection `whoa` that randomizes between sounds `wow.mp3` and `ohmy.ogg`) by editing the config file manually. Assuming you have already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`):

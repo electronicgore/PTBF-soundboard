@@ -4,7 +4,7 @@ This is an extension for [PythonTwitchBotFramework](https://github.com/sharkboun
 
 Quick notes:
 1. As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
-2. The bot forks the `BaseBot` PTBF class to better deal with cooldowns, with the fork dropping some functionality (like event handling). If you want soundboard functionality in a way compatible with `BaseBot` or your other bot class, a [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) should work for you.
+2. The bot forks the `BaseBot` PTBF class to better deal with cooldowns, with the fork dropping some functionality (like event handling). If you want soundboard functionality in a way compatible with `BaseBot` or your other bot class, older [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot should work for you.
 
 For any questions or feature requests, open an issue on github.
 
@@ -19,11 +19,7 @@ For any questions or feature requests, open an issue on github.
 
 
 # Installation
-Get python, get PythonTwitchBotFramework, download the pyfiles from this repo and put them in `<botfolder>/commands/`. Launch the bot as usual.
-
-
-# Quickstart
-Put the repo contents into `soundbot` folder inside the PTBF folder. Create a `run_soundbot.py` in the PTBF folder with the following contents:
+Get python and other dependencies, get PythonTwitchBotFramework, download the pyfiles from this repo and put them into the (freshly created by you) `soundbot` folder inside the PTBF folder. Create a `run_soundbot.py` in the **PTBF folder** with the following contents:
 ```
 from soundbot import SoundBot
 if __name__ == '__main__':
@@ -32,11 +28,13 @@ if __name__ == '__main__':
 (or move the file from the repo to the PTBF folder).
 Then in the command prompt run `python run_soundbot.py` while in the PTBF folder.
 
-Create a `sounds` folder in your bot folder. Put some audio files in there, e.g. `wow.mp3`. Type `!updatesb` in chat. Now you and your viewers can play this sound using the command `!sb wow`.
+
+# Quickstart
+Create a `sounds` folder in your PTBF folder. Put some audio files in there, e.g. `wow.mp3`. Type `!updatesb` in chat. Now you and your viewers can play this sound using the command `!sb wow`.
 
 
 # Config options
-The following options are relevant for the soundboard and are set in `./config/config.json`:
+The following options are relevant for the soundboard and are set in `./config/config.json` (run and kill the bot once after installation to generate the config file):
 
 ## General soundbank config
 * `soundbank_path` (default: `./sounds`): path to folder with all the sounds. All paths to individual sound files must then be relative to this folder.
@@ -108,9 +106,9 @@ The command takes the following options:
 
 * `c` -- *clean*, runs !cleansb (removes the sounds with the missing names) before scanning the folder for new sounds
 * `f` -- *force*, to force-replace any existing sounds in the bank with new ones in case of conflicting sound names (otherwise conflicts are skipped).
-* `g` -- *generate collections* (implies `r`), to automatically create sound [collections](#collections) from filesystem. **This is a destructive operation**, any collections manually specified in the config will be overwritten! See [collections](#collections) section for more info on this option.
 * `r` -- *recursive*, to look for audio files in nested folders as well, and not only in `soundbank_path`;
 * `s` -- *strip prefix*, to strip everything until the first underscore when converting filename to sound name. E.g., `owen_wow.mp3` would be named `wow` by `!updatesb s`.
+* `g` -- *generate collections* (implies `r`), to automatically create sound [collections](#collections) from filesystem. **This is a destructive operation**, any conflicting collections manually specified in the config will be overwritten! See [collections](#collections) section for more info on this option.
 * `q` -- *quiet*, to suppress detailed reporting in the bot output (does not affect the report posted in chat).
 
 The options can be combined in arbitrary order: e.g., `!updatesb rcs` cleans the database, then scans `soundbank_path` and all nested folders, and strips prefixes when generating sound names.
@@ -118,7 +116,7 @@ The options can be combined in arbitrary order: e.g., `!updatesb rcs` cleans the
 To summarize, there are three ways to organize your sound collection that you can mix and match to your liking: 
 1. using whitespaces in filenames: `soundname comment.mp3`;
 2. using prefixes with underscores in filenames (with `s` option): `comment_soundname.mp3`;
-3. using subfolders (with `r` option): `comment/soundname.mp3`.
+3. using subfolders (with `r` option and if you do not plan to use the `g` option): `comment/soundname.mp3`.
 
 Note that these features can create conflicts. E.g., if you have sounds named `wow.mp3` and `wow 2.mp3`, both of them will try to claim sndid `wow`. This is not allowed, and running `!updatesb` will lead to you having only one of the two in the database (and you can't be sure which one). If you want a single command to pull a random sound from a pool of sounds, see [collections](#collections).
 
@@ -140,15 +138,17 @@ Arguments:
 
 
 # Playing and listing sounds
-To play a sound with name `sndid`, use command `!sb sndid`. It is not currently possible to add sounds as first-level commands (e.g., `!sndid`) without manually creating a custom command, see [upstream readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md#adding-commands).
+To play a sound with name `sndid`, use command `!sb sndid`. 
 
-If you would like to list all sounds currently present in the soundbank, use `!gensblist`. Note that this will not output the list in chat (to avoid problems with large soundbanks), but rather create a text file in your sounds folder. The list will contain all sounds and their current prices. The list is unsorted afaik.
+If you want to add sounds as first-level commands (`!sndid`), you can do one of the following: 
+* create a bunch of singleton [collections](#collections), one for every sound, or
+* manually create a custom bot command for every sound (see [upstream readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md#adding-commands) for instructions on how to do that).
 
 
 # Modifying and deleting sounds
 
 This sections describes the commands for updating and removing/cleaning up the sound entries database.
-Note that if you want anyone except for the channel owner to use these commands (as well as the commands for adding sounds), you should add give them `sound` permission (see [PTBF readme](https://github.com/sharkbound/PythonTwitchBotFramework#permissions) for an explanation of permissions).
+Note that if you want anyone except for the channel owner to use these commands (as well as the commands for adding sounds), you should give them the `sound` permission (see [PTBF readme](https://github.com/sharkbound/PythonTwitchBotFramework#permissions) for a brief on permissions).
 
 ## Adjusting the volume
 You can change the volume gain of an individual sound or the whole soundbank using the `!sbvol` command. The command is multifunctional, with the syntax being as follows:
@@ -160,7 +160,7 @@ You can change the volume gain of an individual sound or the whole soundbank usi
 ## Updating sound entries
 You can update the sound data using `!updatesnd`. Syntax: 
 `!updsound <sndid> [name=<new_sndid>] [price=<price>] [pricemult=<pricemult>] [gain=<gain>]`
-Changing the filename is not possible (was too painful to implement). But it is possible to change the sound name. All other options are the same as in [Adding sounds: manual](#adding-sounds-manual)
+Changing the filename is not possible (if you move the file, just delete and re-add). But it is possible to change the sound name. All other options are the same as in [Adding sounds: manual](#adding-sounds-manual)
 
 ## Deleting a sound
 To delete a sound named `sndid`, use `!delsound sndid`.
@@ -176,12 +176,14 @@ To delete a sound named `sndid`, use `!delsound sndid`.
 Instead of playing a *certain* sound after some command, you might want to randomize over a few different sounds. Say, you have two sounds, `wow.mp3` and `ohmy.ogg`, and you want to have a command `!whoa` that flips a coin and plays one of those two sounds. That's exactly what the collections are for!
 
 ## Automatic generation
-In your `<sounds>` folder (`<botfolder>/sounds` by default), create a folder named like the collection you want to create; `whoa` in our example. Put the desired sounds inside this folder (`whoa/wow.mp3` and `whoa/ohmy.ogg`). Run `!updatesb g` from chat (can be combined with other `updatesb` options). This creates a collection (`!whoa`) that plays a random sound from the folder. This also adds the individual sounds from the folder to the soundbank, so `!sb wow` and `!sb ohmy` can then be used to play individual sounds.
+In your `<sounds>` folder (`<botfolder>/sounds` by default), create a folder named after the collection you want to create; `whoa` in our example. Put the desired sounds inside this folder (`whoa/wow.mp3` and `whoa/ohmy.ogg`). Run `!updatesb g` from chat (can be combined with other `updatesb` options). This creates a collection (`!whoa`) that plays a random sound from the folder. This also adds the individual sounds from the folder to the soundbank, so `!sb wow` and `!sb ohmy` can then be used to play individual sounds.
 
-**NOTE:** `!updatesb g` is a destructive operation and will overwrite any collections defined in the config if their names coincide with the parsed folder names.
+*Notes:*
+* `!updatesb g` is a destructive operation and will overwrite any collections defined in the config if their names coincide with the parsed folder names.
+* Collections are only generated for first-level folders in `<sounds`, but not the nested folders.
 
 ## Manual config
-You can also implement the idea described in the intro (collection `whoa` that randomizes between sounds `wow.mp3` and `ohmy.ogg`) by editing the config file manually. This assumes you have already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`):
+You can also implement the idea described in the intro (collection `whoa` that randomizes between sounds `wow.mp3` and `ohmy.ogg`) by editing the config file manually. Assuming you have already [added](#adding-sounds) the two files to the database and can invoke them using `!sb wow` and `!sb ohmy` in `channel` chat), you should add the following to the config (`<botfolder>/configs/config.json`):
 ```json
 "soundbank_use_collections": true,
 "soundbank_collections": {
@@ -189,7 +191,7 @@ You can also implement the idea described in the intro (collection `whoa` that r
 }
 ```
 
-As you can guess, this config defines a new collection `whoa` containing two sounds known to the bot as `wow` and `ohmy`. You (or anyone else in chat) can then use command `!whoa` to play a random sound from this collection. (Note that it is *not* `!sb whoa`.)
+As you can guess, this config defines a new collection `whoa` containing two sounds known to the bot as `wow` and `ohmy`. You (or anyone else in chat) can then use command `!whoa` to play a random sound from this collection. (Note again that it is *not* `!sb whoa`.)
 
 You can, of course, define multiple collections in the config file, separated by commas:
 ```json
@@ -208,9 +210,9 @@ You can, of course, define multiple collections in the config file, separated by
 ## Collections: NOTES
 * You cannot currently set different prices for different collections.
 
-* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This distinction is arbitrary, but the broad idea is that you have very few easily memorable collections, and possibly a lot of individual sounds. Having `!sb sound` instead of `!sound` allows for feedback when a sound is not found (e.g., due to a typo).
+* Collections are currently invoked via `!collection`, whereas individual sounds require a `!sb sound`. This distinction is arbitrary, but the broad idea is that you have very few easily memorable collections, and possibly a lot of individual sounds. Having the `!sb sound` syntax instead of `!sound` allows the bot to respond when a sound is not found (e.g., due to a typo).
 
-* Same as you can have different sounds in different channels, you can have different collections in different channels. Collections from different channels can have the same name. There is currently no easy way to make collections (or sounds) portable across channels.
+* The collections are global across channels.
 
 * The cooldowns are shared across collections and `!sb`.
 
@@ -229,9 +231,9 @@ You can use hotkeys to play sounds, directly or via collections. To do that, ens
   }
 ```
 
-Then after launching the bot, pressing the hotkeys defined in the config file (on the same computer/os/user that the bot is launched from) should play the respective sound or a random sound from the respective collection.
+Then after launching the bot, pressing the hotkey combinations defined in the config file (on the same computer/os/user that the bot is launched from) should play the respective sound or a random sound from the respective collection.
 
-Both sounds and collections are taken from the first channel defined in the `channels` section of the config file. 
+The sounds are taken from the first channel defined in the `channels` section of the config file. 
 
 * `soundbank_hotkeys` (default: `None`): a dictionary of the form `<key>: "<sndid>"`, where `<sndid>` corresponds to a sound identifier (see [Adding sounds](#adding-sounds) below), and `<key>` corresponds to the shortcut you want to use.
 * `soundbank_hotkeys_collections` (default: `None`): a dictionary of the form `<key>: "<collection>"`, where `<collection>` corresponds to a collection identifier (see [Collections](#collections) below), and `<key>` corresponds to the shortcut you want to use.

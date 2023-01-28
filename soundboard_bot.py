@@ -13,7 +13,11 @@ if TYPE_CHECKING:
 
 from twitchbot import BaseBot, Message, CooldownManager
 from twitchbot.config import cfg
-from twitchbot.command import Command, commands
+from twitchbot.command import Command, CustomCommandAction, commands
+from twitchbot.command_whitelist import is_command_whitelisted, send_message_on_command_whitelist_deny
+from twitchbot.disabled_commands import is_command_disabled
+from twitchbot.enums import Event
+from twitchbot.event_util import forward_event_with_results, forward_event
 from twitchbot.exceptions import InvalidArgumentsError, BotNotRunningError
 from twitchbot.permission import perms
 from twitchbot.irc import Irc
@@ -61,6 +65,16 @@ class SoundBot(BaseBot):
                 )
             return
 
+        elif not isinstance(cmd, CustomCommandAction) and is_command_disabled(msg.channel_name, cmd.fullname):
+            if cfg.send_message_on_disabled_command_use:
+                await msg.reply(f'{cmd.fullname} is disabled for this channel')
+            return
+
+        # also check if the command is whitelisted, (if its not a custom command)
+        if not isinstance(cmd, CustomCommandAction) and not is_command_whitelisted(cmd.name):
+            if send_message_on_command_whitelist_deny():
+                await msg.reply(f'{msg.mention} "{cmd.fullname}" is not enabled in the command whitelist')
+            return
 
         # cooldowns
         try:
@@ -88,4 +102,5 @@ class SoundBot(BaseBot):
             # it's probably not a great idea to make this a universal handler for all commands when I only need it for !sb...
             # just in case, printing out the error details in the console:
             print(f'there was an error while attempting to execute the command: {e}.')
-            return
+        else:
+            forward_event(Event.on_after_command_execute, msg, cmd, channel=msg.channel_name)

@@ -39,6 +39,7 @@ else:
     try:
         # If just a number is specified, it is converted to a dictionary with channel-specific values
         g = float(cfg.soundbank_gain)
+        cfg.data['soundbank_gain']={}
         for channel in cfg.channels:
             cfg.data['soundbank_gain'][channel]=g
     except:

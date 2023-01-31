@@ -196,7 +196,7 @@ def _create_colln(colln):
     exec(f"""@CooldownTag(tag='Sound')
 @Command('{colln}', permission=SB_PERM, syntax='', cooldown=cfg.soundbank_cooldown)
 async def cmd_play_collection(msg: Message):
-    await play_collection(msg, '{colln}')""")
+    await accounting_collection(msg, '{colln}')""")
 
 
 
@@ -573,42 +573,49 @@ async def cmd_sbvol(msg: Message, *args):
 
 async def accounting_collection(msg: Message, colln: str):
     """Expropriate the points from the message author who dared to play a collection sound"""
-
-    if SBCOLL_PRICE==0:
-        # Nothing to do if things are free
-        return
-    else:
-        if get_balance_from_msg(msg).balance < SBCOLL_PRICE:
-            currency = get_currency_name(msg.channel_name).name
-            raise InvalidArgumentsError(f'{msg.author} tried to play a sound from "{colln}" '
-                f'for {SBCOLL_PRICE} {currency}, but they do not have enough {currency}!')
-        subtract_balance(msg.channel_name, msg.author, SBCOLL_PRICE)
-
-
-async def play_collection(msg: Message, colln: str) -> None:
-    """The actual command to play a sound from the required collection in a given channel"""
     channel = msg.channel_name
+    currency = get_currency_name(channel).name
+    author = msg.author
+
+    if SBCOLL_PRICE>0 and get_balance_from_msg(msg).balance < SBCOLL_PRICE:
+        raise InvalidArgumentsError(f'{author} tried to play a sound from "{colln}" '
+            f'for {SBCOLL_PRICE} {currency}, but they do not have enough {currency}!')
+
+    play_collection(colln, channel)
+
+    if SBCOLL_PRICE>0:
+        subtract_balance(channel, author, SBCOLL_PRICE)
+
+    if cfg.soundbank_verbose:
+        await msg.reply(f'{author} played "{snd.sndid}" for {SBCOLL_PRICE} {currency}')
+
+
+
+
+def play_collection(colln: str, channel: str = cfg.channels[0]) -> None:
+    """The actual command to play a sound from the required collection"""
     collns = cfg.soundbank_collections
 
     if not colln in collns:
-        # This can only happen in a multi-channel setup
+        # Something has been misconfigured
         raise InvalidArgumentsError(reason=f'Collection {colln} is not defined!',
             cmd=play_collection)
         return
 
-    RNDSND = rndchoice(collns[colln]).lower()
-    print(f'Playing random sound "{RNDSND}" from collection "{colln}"')
-    snd = get_sound(channel, RNDSND)
-    if snd is None:
-        await msg.reply(f'no sound found with name "{RNDSND}"')
-        # raising an exception on no sound found means we skip accounting and avoid starting the cooldown
-        raise ValueError(RNDSND)
-        return
+    for i in range(10):
+        # Iterate until a playable sound is pulled
+        RNDSND = rndchoice(collns[colln]).lower()
+        print(f'Playing random sound "{RNDSND}" from collection "{colln}"')
+        snd = get_sound(channel, RNDSND)
+        if snd is None:
+            print(f'No sound found with name "{RNDSND}"!')
+        else:
+            break
+    else:
+        # No playable sound was found
+        raise ValueError("Could not find a playable sound in collection '{colln}'")
 
     play_sound(snd)
-    await accounting_collection(msg, colln)
-    if cfg.soundbank_verbose:
-        await msg.reply(f'{msg.author} played "{snd.sndid}" for {SBCOLL_PRICE} {get_currency_name(msg.channel_name).name}')
 
 
 # create a command for every collection (on initialization)

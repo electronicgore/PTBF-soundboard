@@ -67,7 +67,7 @@ SB_COOLDOWN = cfg.soundbank_cooldown
 SB_PATH = cfg.soundbank_path
 SB_DEFPRICE = cfg.soundbank_default_price
 SB_PERM = cfg.soundbank_permission
-SB_GAIN = cfg.soundbank_gain
+#SB_GAIN = cfg.soundbank_gain # this is updated during runtime
 
 
 
@@ -433,6 +433,7 @@ async def cmd_get_sound(msg: Message, *args):
     subtract_balance(msg.channel_name, msg.author, price)
 
     # get the per-channel volume gain
+    SB_GAIN = cfg.soundbank_gain
     if msg.channel_name in SB_GAIN:
         gain = SB_GAIN[msg.channel_name]
     else:
@@ -521,6 +522,7 @@ async def cmd_gen_sb_list(msg: Message):
 @Command('sbvol', permission='sound', syntax='<optional:sndid> <gain>',
     help='changes either the soundbank volume gain, or the gain of an individual sound, in db')
 async def cmd_sbvol(msg: Message, *args):
+    SB_GAIN = cfg.soundbank_gain
     if msg.channel_name not in SB_GAIN:
         SB_GAIN[msg.channel_name] = 0
     if not args:
@@ -615,7 +617,14 @@ def play_collection(colln: str, channel: str = cfg.channels[0]) -> None:
         # No playable sound was found
         raise ValueError("Could not find a playable sound in collection '{colln}'")
 
-    play_sound(snd)
+    # get the per-channel volume gain
+    SB_GAIN = cfg.soundbank_gain
+    if channel in SB_GAIN:
+        gain = SB_GAIN[channel]
+    else:
+        gain = 0
+
+    play_sound(snd, gain)
 
 
 # create a command for every collection (on initialization)

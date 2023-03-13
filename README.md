@@ -1,10 +1,10 @@
 # PythonTwitchBotFramework Soundboard mod
 
-This is an extension for [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. See [the original readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md) and  [the original wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) for more info on how to install, set up, and use the bot (but a quick guide follows).
+This is an extension for [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework) that adds the soundboard capabilities to the bot. See [the upstream readme](https://github.com/sharkbound/PythonTwitchBotFramework/blob/master/README.md) and  [the upstream wiki](https://github.com/sharkbound/PythonTwitchBotFramework/wiki) for more info on how to install, set up, and use the bot (but a quick guide follows).
 
 Quick notes:
 1. As of now, the soundboard *partially* integrates with the bot's own economy, but does not react to bits/subscriptions/channel points. 
-2. The bot forks the `BaseBot` PTBF class to better deal with cooldowns, with the fork dropping some functionality (like event handling). If you want soundboard functionality in a way compatible with `BaseBot` or your other bot class, older [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot should work for you.
+2. The bot forks the `BaseBot` PTBF class to better deal with cooldowns, with the fork potentially missing some functionality. If you want soundboard functionality in a way fully compatible with `BaseBot` or your other bot class, older [version 0.3](https://github.com/electronicgore/PTBF-soundboard/releases/tag/v0.3) of this bot should work for you.
 
 For any questions or feature requests, open an issue on github.
 
@@ -13,7 +13,7 @@ For any questions or feature requests, open an issue on github.
 
 1. [PythonTwitchBotFramework](https://github.com/sharkbound/PythonTwitchBotFramework), obviously
 2. [PyDub](https://github.com/jiaaro/pydub/) to play sounds. 
-	* If you are on windows and you get a permission error when trying to play sounds, see [PyDub issue 209](https://github.com/jiaaro/pydub/issues/209). The issue can be fixed by a one-line patch to the installed PyDub scripts. But simply installing SimpleAudio works for some people too.
+	* If you are on windows and you get a permission error when trying to play sounds, see [PyDub issue 209](https://github.com/jiaaro/pydub/issues/209). The issue can be fixed by a one-line patch to the installed PyDub scripts. But simply installing SimpleAudio in addition to PyDub works for some people too.
 3. WAV works with no further dependencies; for other formats you'll need [ffmpeg](http://www.ffmpeg.org/) or [libav](http://libav.org/) installed in the system.
 4. [Pynput](https://pypi.org/project/pynput/) (optional) for hotkey controls.
 
